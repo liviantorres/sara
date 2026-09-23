@@ -1,98 +1,41 @@
-import React, { useState } from "react";
-import { Mail, Eye, User, ChevronLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
+import React from 'react';
 
-export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Dados enviados:", { email, password });
-  };
-
+export default function SaraLogo({ className = "w-40" }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-200 p-4">
-      <div className="bg-[#EDEDED] w-full max-w-4xl rounded-[40px] shadow-xl border border-gray-300/50 p-8 md:p-12 flex relative overflow-hidden min-h-[500px]">
-        <Link
-          to="/"
-          className="absolute top-6 left-6 
-                        flex items-center justify-center
-                        w-10 h-10 rounded-full
-                        
-                        cursor-pointer
-                        hover:bg-white/60 
-                        active:scale-95
-                        
-                        transition-all duration-200"
-        >
-          <ChevronLeft className="w-7 h-7 text-gray-700" />
-        </Link>
+    <svg 
+      viewBox="0 0 160 48" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg" 
+      className={className}
+    >
 
-        <div className="w-full md:w-3/5 flex flex-col justify-center pr-0 md:pr-8 z-10">
-          <h1 className="font-bahiana text-5xl md:text-6xl text-center text-[#1A1A1A] tracking-wider leading-none mb-8 uppercase">
-            CADASTRE-SE
-          </h1>
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5 max-w-sm mx-auto w-full"
-          >
-            <Input
-              id="name"
-              type="name"
-              placeholder="Nome"
-              icon={User}
-              value={name}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <Input
-              id="email"
-              type="email"
-              placeholder="E-mail"
-              icon={Mail}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <Input
-              id="password"
-              type="password"
-              placeholder="Senha"
-              icon={Eye}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirmar senha"
-              icon={Eye}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-
-            <Button type="submit">Registrar</Button>
-          </form>
-        </div>
-
-        <div className="hidden md:flex w-2/5 justify-center items-start relative select-none">
-          <img
-            src="/src/assets/mobile-ufc.png"
-            alt="Móbile de madeira UFC"
-            className="h-[120%] object-contain absolute -top-12 right-23 drop-shadow-md swinging"
-          />
-        </div>
-      </div>
-    </div>
+      <rect x="0" y="24" width="8" height="16" rx="2" fill="#00427A" />
+      <rect x="12" y="14" width="8" height="26" rx="2" fill="#005386" />
+      <rect x="24" y="4" width="8" height="36" rx="2" fill="#F2A900" /> 
+    
+      <text 
+        x="42" 
+        y="32" 
+        fontFamily="sans-serif" 
+        fontWeight="900" 
+        fontSize="34" 
+        fill="#00427A" 
+        letterSpacing="0.05em"
+      >
+        SARA
+      </text>
+      
+      <text 
+        x="45" 
+        y="44" 
+        fontFamily="sans-serif" 
+        fontWeight="600" 
+        fontSize="8" 
+        fill="#6B7280" 
+        letterSpacing="0.1em"
+      >
+        RETENÇÃO ACADÊMICA
+      </text>
+    </svg>
   );
 }

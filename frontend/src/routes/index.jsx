@@ -25,9 +25,9 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recoverpassword" element={<RecoverPassword />} />
-        <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/inicial" element={<Dashboard/>}/>
         <Route path="/alunos" element={<Students/>}/>
-        <Route path="/disciplinas" element={<Disciplines/>}/>
+        <Route path="/estudantes" element={<Disciplines/>}/>
         <Route path="/relatorios" element={<Reports/>}/>
         <Route path="/importacao-de-dados" element={<DataImport/>}/>
         <Route path="/analises" element={<Analysis/>}/>
