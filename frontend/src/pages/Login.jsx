@@ -1,16 +1,47 @@
 import React, { useState } from "react";
-import { User, Lock, EyeOff, ShieldCheck } from "lucide-react"; 
-import { Link } from "react-router-dom";
+import { User, Lock, EyeOff, Eye, ShieldCheck, Loader2 } from "lucide-react";
+import { Link, replace } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
 
 export default function Login() {
+
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Dados enviados:", { email, password });
+    setError(null);
+    setIsLoading(true);
+    try {
+      const response = await api.post("/auth/login", { email, password });
+
+      const token = response.data.token || response.data.access_token;
+        
+      const user = response.data.user;
+
+      if (token) {
+        localStorage.setItem("@App:token", token);
+
+        if (user) {
+          localStorage.setItem("@App:user", JSON.stringify(user))
+        }
+        navigate("/inicial", { replace: true });
+      }
+    } catch (err) {
+      console.error("Erro no login:", err);
+      const mensagemErro = err.response?.data?.message || "Usuário ou senha incorretos. Tente novamente.";
+      setError(mensagemErro);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,6 +85,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 className="w-full border-gray-300 rounded-lg py-3"
               />
             </div>
@@ -65,17 +97,24 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Digite a sua senha"
                   icon={Lock}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isLoading}
                   className="w-full border-gray-300 rounded-lg py-3"
                 />
 
-                <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <EyeOff size={20} />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
             </div>
@@ -89,10 +128,24 @@ export default function Login() {
               </Link>
             </div>
 
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200 text-center font-figtree animate-pulse">
+                {error}
+              </div>
+            )}
             <Button
               type="submit"
+              disabled={isLoading}
+              className={`w-full py-3 flex justify-center items-center gap-2 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
             >
-              Entrar
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
             </Button>
           </form>
 
