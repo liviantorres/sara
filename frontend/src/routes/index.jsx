@@ -1,37 +1,54 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import MainLayout from "../layouts/MainLayout"; 
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import RecoverPassword from "../pages/RecoverPassword";
-import Dashboard from "../pages/Dashboard";
-import Students from "../pages/Students";
-import Disciplines from "../pages/Disciplines";
-import Reports from "../pages/Reports";
-import DataImport from "../pages/DataImport";
-import Analysis from "../pages/Analysis";
 
-const PrivateRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("@App:tokes") ? true : false;
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Students = lazy(() => import("../pages/Students"));
+const Disciplines = lazy(() => import("../pages/Disciplines"));
+const Reports = lazy(() => import("../pages/Reports"));
+const DataImport = lazy(() => import("../pages/DataImport"));
+const Analysis = lazy(() => import("../pages/Analysis"));
+
+
+const SuspenseWrapper = ({ children }) => (
+  <Suspense fallback={<div>Carregando módulo...</div>}>
+    {children}
+  </Suspense>
+);
+
+const ProtectedRoute = () => {
+  // const isAuthenticated = !!localStorage.getItem("@App:token");
+  const isAuthenticated = true;
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-export default function AppRoutes() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/recoverpassword" element={<RecoverPassword />} />
-        <Route path="/inicial" element={<Dashboard/>}/>
-        <Route path="/alunos" element={<Students/>}/>
-        <Route path="/estudantes" element={<Disciplines/>}/>
-        <Route path="/relatorios" element={<Reports/>}/>
-        <Route path="/importacao-de-dados" element={<DataImport/>}/>
-        <Route path="/analises" element={<Analysis/>}/>
-      </Routes>
-    </BrowserRouter>
-  );
-}
+export const appRoutes = createBrowserRouter([
+
+  { path: "/", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "/recoverpassword", element: <RecoverPassword /> },
+
+  {
+    element: <ProtectedRoute />, 
+    children: [
+      {
+        element: <MainLayout />, 
+        children: [
+          { path: "/inicial", element: <SuspenseWrapper><Dashboard /></SuspenseWrapper> },
+          { path: "/alunos", element: <SuspenseWrapper><Students /></SuspenseWrapper> },
+          { path: "/estudantes", element: <SuspenseWrapper><Disciplines /></SuspenseWrapper> },
+          { path: "/relatorios", element: <SuspenseWrapper><Reports /></SuspenseWrapper> },
+          { path: "/importacao-de-dados", element: <SuspenseWrapper><DataImport /></SuspenseWrapper> },
+          { path: "/analises", element: <SuspenseWrapper><Analysis /></SuspenseWrapper> },
+        ],
+      },
+    ],
+  },
+
+  { path: "*", element: <div>Página não encontrada (Criar componente 404)</div> },
+]);

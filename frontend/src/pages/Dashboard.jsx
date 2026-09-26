@@ -1,125 +1,58 @@
 import React from "react";
-import Layout from "../components/Layout";
-import Card from "../components/Card";
-import { TriangleAlert, Users, GraduationCap } from "lucide-react";
-import RetentionByCourseChart from "../components/RetentionByCourseChart";
-import RetentionCountChart from "../components/RetentionCountChart";
-import useAlunos from "../hooks/useAlunos";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-import {
-  getRetencaoPorCurso,
-  getEvolucaoRetencao,
-  getRetidosPorAno,
-  isRetido,
-  getTaxaRetencaoTempo,
-  getTaxaRetencaoDesempenho,
-  getTaxaReprovacao,
-  getMediaIRA
-} from "../services/dashboardServices";
+const data = [
+  { name: "Jan", retidos: 500, media: 900 },
+  { name: "Feb", retidos: 800, media: 1300 },
+  { name: "Mar", retidos: 600, media: 1500 },
+  { name: "Apr", retidos: 1000, media: 1100 },
+  { name: "May", retidos: 900, media: 1050 },
+  { name: "Jun", retidos: 1100, media: 1600 },
+  { name: "Jul", retidos: 1500, media: 2100 },
+  { name: "Aug", retidos: 1800, media: 2300 },
+];
 
 export default function Dashboard() {
-  const alunosSI = useAlunos("/data/alunos-si.csv");
-  const alunosCC = useAlunos("/data/alunos-cc.csv");
-  const alunosEC = useAlunos("/data/alunos-ec.csv");
-  const alunosEM = useAlunos("/data/alunos-em.csv");
-  const alunosEA = useAlunos("/data/alunos-ea.csv");
-
-  const alunos = [
-    ...alunosSI,
-    ...alunosCC,
-    ...alunosEC,
-    ...alunosEM,
-    ...alunosEA,
-  ];
-
-  const loading =
-    !alunosSI.length ||
-    !alunosCC.length ||
-    !alunosEC.length ||
-    !alunosEM.length ||
-    !alunosEA.length;
-
-  const totalAlunos = alunos.length;
-
-  const retidos = alunos.filter(isRetido);
-  const totalRetidos = retidos.length;
-
-  const taxaRetencao =
-    totalAlunos > 0 ? ((totalRetidos / totalAlunos) * 100).toFixed(1) : "0.00";
-
-  const taxaReprovacao = alunos?.length ? getTaxaReprovacao(alunos) : 0;
-
-  const dataCurso = getRetencaoPorCurso(alunos);
-  const dataEvolutionCourse = getEvolucaoRetencao(alunos);
-  const dataCountCourse = getRetidosPorAno(alunos);
-
-  const mediaIRA = getMediaIRA(alunos);
-  const mediaIRARetidos = getMediaIRA(alunos, isRetido);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="p-10 text-gray-500">Carregando dados...</div>
-      </Layout>
-    );
-  }
-
   return (
-    <Layout>
-      <h1 className="font-lexend font-light text-4xl pl-5 pt-5">Dashboard</h1>
+    <>
+      <div className="mb-8">
+        <h2 className="text-3xl font-semibold font-figtree text-gray-900">Olá, Zé Welligton.</h2>
+        <p className="text-gray-800 mt-1 text-base font-figtree">Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica.</p>
+        <p className="text-xs text-gray-600 mt-2 font-figtree">Última atualização: 22/07/2026 às 08:15</p>
+      </div>
 
-      <p className="font-lexend font-extralight pl-6 pb-8">
-        Visão geral da retenção acadêmica
-      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { title: "Total de alunos", value: "565" },
+          { title: "Retidos", value: "368" },
+          { title: "Taxa de Retenção", value: "70,4%" },
+          { title: "Alertas", value: "12" },
+        ].map((card, idx) => (
+          <div key={idx} className="bg-white border border-gray-300 rounded-xl p-6 text-center">
+            <span className="text-lg font-medium text-gray-700 block mb-2 font-figtree">{card.title}</span>
+            <span className="text-4xl font-bold font-figtree text-gray-900">{card.value}</span>
+          </div>
+        ))}
+      </div>
 
-      <div className="pl-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 pr-10 pb-6">
-          <Card
-            title="Total de alunos"
-            value={totalAlunos}
-            icon={<Users size={28} />}
-            variant="info"
-          />
-
-          <Card
-            title="Qtd. de Retidos"
-            value={totalRetidos}
-            percentage={`${taxaRetencao}%`}
-            icon={<TriangleAlert size={28} />}
-            variant="warning"
-          />
-
-          <Card
-            title="Média do IRA (Geral)"
-            value={`${mediaIRA.toFixed(2)}`}
-            icon={<GraduationCap size={28} />}
-            variant="success"
-          />
-
-          <Card
-            title="Média do IRA (Retidos)"
-            value={`${mediaIRARetidos.toFixed(2)}`}
-            icon={<GraduationCap size={28} />}
-            variant="danger"
-          />
-            <Card
-            title="Taxa de Retenção"
-            value={`${taxaRetencao}%`}
-            icon={<TriangleAlert size={28} />}
-            variant="info"
-          />
-
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 pr-10 pb-6">
+      {/* Gráfico */}
+      <div className="bg-white border border-gray-300 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-gray-800 font-figtree">Evolução da Retenção</h3>
+        <p className="text-xs text-gray-400 mb-6 font-figtree">Neste gráfico, é demonstrada a evolução da retenção ao longo dos anos.</p>
         
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-10">
-          <RetentionByCourseChart data={dataCurso} />
-          <RetentionCountChart data={dataCountCourse} />
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+              <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="retidos" stroke="#0284C7" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="media" stroke="#F59E0B" strokeWidth={3} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
