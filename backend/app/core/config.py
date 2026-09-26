@@ -1,27 +1,18 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pathlib import Path
+import os
+from dotenv import load_dotenv, find_dotenv
 
-base_dir = Path(__file__).resolve().parents[3]
+load_dotenv(find_dotenv())
 
-class Settings(BaseSettings):
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: str
-    DB_NAME: str
+class Settings:
+  
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_HOST = os.getenv("DB_HOST")
+    DB_PORT = os.getenv("DB_PORT")
+    DB_NAME = os.getenv("DB_NAME")
 
-    model_config = SettingsConfigDict(
-        env_file= base_dir / ".env",
-        env_file_encoding= "utf-8",
-    )
 
-    @property
-    def database_url(self)-> str:
-        return(
-            f"postgresql+psycopg2://"
-            f"{self.DB_USER}:{self.DB_PASSWORD}@"
-            f"{self.DB_HOST}:{self.DB_PORT}/"
-            f"{self.DB_NAME}"
-        )
+    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 settings = Settings()
