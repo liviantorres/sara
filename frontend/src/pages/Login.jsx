@@ -5,6 +5,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
 
@@ -15,6 +16,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  const {signIn} = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,11 +31,7 @@ export default function Login() {
       const user = response.data.user;
 
       if (token) {
-        localStorage.setItem("@App:token", token);
-
-        if (user) {
-          localStorage.setItem("@App:user", JSON.stringify(user))
-        }
+        signIn(user, token)
         navigate("/inicial", { replace: true });
       }
     } catch (err) {
