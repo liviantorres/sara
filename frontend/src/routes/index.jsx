@@ -21,8 +21,7 @@ const SuspenseWrapper = ({ children }) => (
 );
 
 const ProtectedRoute = () => {
-  // const isAuthenticated = !!localStorage.getItem("@App:token");
-  const isAuthenticated = true;
+  const isAuthenticated = !!localStorage.getItem("@App:token");
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
