@@ -4,25 +4,38 @@ import { api } from "../services/api";
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-  
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("@App:user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    try {
+      const storedUser = localStorage.getItem("@App:user");
+      const storedToken = localStorage.getItem("@App:token");
+
+      if (storedUser && storedUser !== "undefined") {
+        if (storedToken) {
+          api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        }
+        return JSON.parse(storedUser);
+      }
+    } catch (error) {
+      console.warn("Lixo encontrado no localStorage, limpando...", error);
+      localStorage.removeItem("@App:user");
+      localStorage.removeItem("@App:token");
+    }
+    return null;
   });
 
   const signIn = (userData, token) => {
-    setUser(userData); 
-
+    setUser(userData);
     localStorage.setItem("@App:user", JSON.stringify(userData));
     localStorage.setItem("@App:token", token);
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   };
 
   const signOut = () => {
-    setUser(null); 
+    setUser(null);
     localStorage.removeItem("@App:user");
     localStorage.removeItem("@App:token");
-    
-    window.location.href = "/login";
+    delete api.defaults.headers.common["Authorization"];
   };
 
   return (

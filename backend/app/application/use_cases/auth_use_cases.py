@@ -31,4 +31,11 @@ class LoginUserUseCase:
             raise ValueError("Credenciais inválidas.")
 
         token = create_access_token({"sub": str(user.id), "email": user.email})
-        return TokenOutput(access_token=token)
+        return TokenOutput(
+            access_token=token,
+            token_type="bearer",
+            user={
+                "nome": user.nome, 
+                "email": user.email,
+            }
+            )

@@ -25,10 +25,14 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const requestUrl = error.config?.url || "";
+
+    if (error.response && error.response.status === 401 && !requestUrl.includes('/login')) {
       localStorage.removeItem("@App:token");
-      window.location.href = "/";
+      localStorage.removeItem("@App:user"); 
+      window.location.href = "/login"; 
     }
+    
     return Promise.reject(error);
   }
 );

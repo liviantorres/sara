@@ -49,5 +49,5 @@ export const appRoutes = createBrowserRouter([
     ],
   },
 
-  { path: "*", element: <div>Página não encontrada (Criar componente 404)</div> },
+  { path: "*", element: <Navigate to="/" replace /> },
 ]);

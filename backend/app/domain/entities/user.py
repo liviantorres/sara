@@ -7,3 +7,4 @@ class User:
     nome: str
     email: str
     password_hash: str
+

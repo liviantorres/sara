@@ -1,5 +1,6 @@
 import React from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useAuth } from "../contexts/AuthContext"
 
 const data = [
   { name: "Jan", retidos: 500, media: 900 },
@@ -13,10 +14,14 @@ const data = [
 ];
 
 export default function Dashboard() {
+
+  const {user, signOut } = useAuth();
+  const userName = user?.nome || "Usuário SARA";
+
   return (
     <>
       <div className="mb-8">
-        <h2 className="text-3xl font-semibold font-figtree text-gray-900">Olá, Zé Welligton.</h2>
+        <h2 className="text-3xl font-semibold font-figtree text-gray-900">Olá, {userName}</h2>
         <p className="text-gray-800 mt-1 text-base font-figtree">Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica.</p>
         <p className="text-xs text-gray-600 mt-2 font-figtree">Última atualização: 22/07/2026 às 08:15</p>
       </div>
