@@ -36,6 +36,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("@App:user");
     localStorage.removeItem("@App:token");
     delete api.defaults.headers.common["Authorization"];
+    window.location.href = "/";
   };
 
   return (
