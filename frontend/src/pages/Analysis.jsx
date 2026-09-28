@@ -9,13 +9,9 @@ export default function Analysis(){
 
     return(
         <div>
-            <Layout> 
             <h1 className="font-lexend font-light text-4xl pl-5 pt-5">Análises</h1>
             <p className="font-lexend font-extralight pl-6 pb-8">Gerenciar e visualizar dados dos estudantes</p>
-            
 
-           
-            </Layout>
         </div>
     );
 }

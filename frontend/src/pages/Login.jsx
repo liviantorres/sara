@@ -32,11 +32,11 @@ export default function Login() {
 
       if (token) {
         signIn(user, token)
-        navigate("/inicial", { replace: true });
+        navigate("/inicial");
       }
     } catch (err) {
       console.error("Erro no login:", err);
-      const mensagemErro = err.response?.data?.message || "Usuário ou senha incorretos. Tente novamente.";
+      const mensagemErro = String(err.response?.data?.detail || err.response?.data?.message || "Usuário ou senha incorretos. Tente novamente.");
       setError(mensagemErro);
     } finally {
       setIsLoading(false);
