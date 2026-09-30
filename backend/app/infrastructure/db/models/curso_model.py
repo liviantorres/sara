@@ -5,6 +5,6 @@ from app.infrastructure.db.session import Base
 class CursoModel(Base):
     __tablename__ = "curso"
 
-    id = Column("id_curso", Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     sigla = Column(String(20), nullable=False)
     nome = Column(String(100), nullable=False)

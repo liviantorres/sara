@@ -10,7 +10,7 @@ class PapelUsuario(str, enum.Enum):
 class UserModel(Base):
     __tablename__ = "usuario" 
 
-    id = Column("id_usuario", Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     nome = Column(String(200), nullable=False)
     email = Column(String(200), unique=True, index=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
