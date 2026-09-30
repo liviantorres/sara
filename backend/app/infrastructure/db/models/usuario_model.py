@@ -4,16 +4,16 @@ from sqlalchemy import Column, Integer, String, Enum, DateTime
 from app.infrastructure.db.session import Base
 
 class PapelUsuario(str, enum.Enum):
-    ADMIN = "admin"
-    USUARIO = "usuario"
+    DAE = "dae"
+    COORDENACAO = "coordenacao"
 
-class UserModel(Base):
+class UsuarioModel(Base):
     __tablename__ = "usuario" 
 
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String(200), nullable=False)
     email = Column(String(200), unique=True, index=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
-    papel = Column(Enum(PapelUsuario), nullable=False, default=PapelUsuario.USUARIO)
+    papel = Column(Enum(PapelUsuario), nullable=False, default=PapelUsuario.COORDENACAO)
     data_criacao= Column(DateTime(timezone=True), server_default=func.now())
     
