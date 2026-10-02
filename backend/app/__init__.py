@@ -22,7 +22,7 @@ app.add_middleware(
 
 app.include_router(curso_routes.router, prefix="/api")
 app.include_router(sync_routes.router, prefix="/api")
-app.include_router(autenticacao_routes, prefix="/api")
+app.include_router(autenticacao_routes.router, prefix="/api")
 app.include_router(aluno_routes.router, prefix="/api")
-app.include_router(disciplina_routes, prefix="/api")
-app.include_router(historico_routes, prefix="/api")
+app.include_router(disciplina_routes.router, prefix="/api")
+app.include_router(historico_routes.router, prefix="/api")
