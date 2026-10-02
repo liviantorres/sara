@@ -1,6 +1,6 @@
 from app.infrastructure.repositories.aluno_repository import AlunoRepository
 
-class ListarAlunosUseCase:
+class ListarAlunosUseCases:
     def __init__(self, repository: AlunoRepository):
         self.repository = repository
 

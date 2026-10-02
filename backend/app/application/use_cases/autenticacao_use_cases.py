@@ -3,7 +3,7 @@ from app.infrastructure.db.models.usuario_model import UsuarioModel
 from app.application.dtos.autenticacao_dto import RegistroUsuarioInput, LoginUsuarioInput, TokenOutput
 from app.infrastructure.security.security_service import hash_password, verify_password, create_access_token
 
-class RegistrarUsuarioUseCase:
+class RegistrarUsuarioUseCases:
     def __init__(self, db: Session):
         self.db = db
 

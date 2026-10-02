@@ -5,7 +5,7 @@ from app.infrastructure.db.models.curso_model import CursoModel
 from app.infrastructure.db.models.aluno_model import AlunoModel
 from app.infrastructure.db.models.historico_disciplina_model import HistoricoDisciplinaModel
 
-class SyncDeysiDataUseCase:
+class SyncDeysiDataUseCases:
     def __init__(self, db: Session):
         self.db = db
 
