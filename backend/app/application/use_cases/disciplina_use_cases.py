@@ -4,7 +4,7 @@ class ListarDisciplinasUseCases:
     def __init__(self, repository: DisciplinaRepository):
         self.repository = repository
 
-    def executar(self):
-        disciplinas = self.repository.listar_todos()
+    def executar(self, pular: int=0, limite: int=100):
+        disciplinas = self.repository.listar_todos(pular, limite)
 
         return disciplinas

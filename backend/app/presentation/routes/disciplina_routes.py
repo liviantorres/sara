@@ -10,11 +10,11 @@ from app.application.dtos.disciplina_dto import DisciplinaResponse
 router = APIRouter()
 
 @router.get("/disciplinas", response_model= List[DisciplinaResponse])
-def listar_disciplinas(db: Session = Depends(get_db)):
+def listar_disciplinas(pular: int=0, limite: int=100, db: Session = Depends(get_db)):
     repository = DisciplinaRepository(db)
     use_case = ListarDisciplinasUseCases(repository)
 
-    disciplinas = use_case.executar()
+    disciplinas = use_case.executar(pular, limite)
     
     return disciplinas
 
