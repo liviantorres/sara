@@ -4,7 +4,7 @@ from typing import List
 
 from app.infrastructure.db.session import get_db
 from app.infrastructure.repositories.curso_repository import CursoRepository
-from app.application.use_cases.listar_cursos_use_case import ListarCursosUseCase
+from backend.app.application.use_cases.curso_use_cases import ListarCursosUseCase
 from app.application.dtos.curso_dto import CursoResponse
 
 router = APIRouter()
