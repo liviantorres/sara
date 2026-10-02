@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from  sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 
 from app.infrastructure.db.session import get_db
-from app.application.use_cases.sync_deysi_data import SyncDeysiDataUseCase
+from app.application.use_cases.sync_deysi_data import SyncDeysiDataUseCases
 from app.infrastructure.security.auth_deps import require_dae
 
 router = APIRouter(prefix="/admin", tags=["Admin (DAE)"])
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/admin", tags=["Admin (DAE)"])
 @router.post("/sincronizar", dependencies=[Depends(require_dae)])
 def sicronizar_dados(db: Session = Depends(get_db)):
     
-    use_case = SyncDeysiDataUseCase(db)
+    use_case = SyncDeysiDataUseCases(db)
     resultado = use_case.executar()
 
     return resultado
