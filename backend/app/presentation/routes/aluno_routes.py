@@ -10,10 +10,14 @@ from app.application.dtos.aluno_dto import AlunoResponse
 router = APIRouter(tags=["Alunos"])
 
 @router.get("/alunos", response_model=List[AlunoResponse])
-def listar_alunos(pular: int=0, limite: int=100,curso_id: Optional[int]=None, db: Session = Depends(get_db)):
+def listar_alunos(pular: int=0, limite: int=100,curso_id: Optional[int]=None,
+                  matricula: Optional[int]=None, formado: Optional[bool]=None, 
+                  ira_max: Optional[float]=None, semestre: Optional[int]=None,
+                   db: Session = Depends(get_db)):
+    
     repository = AlunoRepository(db)
     use_case = ListarAlunosUseCases(repository)
 
-    alunos = use_case.executar(pular=pular, limite=limite, curso_id=curso_id)
+    alunos = use_case.executar(pular=pular, limite=limite, curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre)
 
     return alunos
