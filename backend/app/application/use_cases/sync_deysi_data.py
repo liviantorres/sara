@@ -1,4 +1,3 @@
-import pandas as pd
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models.disciplina_model import DisciplinaModel
 from app.infrastructure.db.models.curso_model import CursoModel
@@ -10,6 +9,7 @@ class SyncDeysiDataUseCases:
         self.db = db
 
     def executar(self):
+        import pandas as pd
         info_cursos = {
             "cc.csv": {"sigla": "CC", "nome": "Ciência da Computação"},
             "ea.csv": {"sigla": "EA", "nome": "Engenharia Ambiental e Sanitária"},
