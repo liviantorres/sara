@@ -7,7 +7,7 @@ from app.infrastructure.repositories.disciplina_repository import DisciplinaRepo
 from app.application.use_cases.disciplina_use_cases import ListarDisciplinasUseCases
 from app.application.dtos.disciplina_dto import DisciplinaResponse
 
-router = APIRouter()
+router = APIRouter(tags=["Disciplinas"])
 
 @router.get("/disciplinas", response_model= List[DisciplinaResponse])
 def listar_disciplinas(pular: int=0, limite: int=100, db: Session = Depends(get_db)):

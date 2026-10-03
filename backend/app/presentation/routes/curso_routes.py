@@ -7,7 +7,7 @@ from app.infrastructure.repositories.curso_repository import CursoRepository
 from app.application.use_cases.curso_use_cases import ListarCursosUseCases
 from app.application.dtos.curso_dto import CursoResponse
 
-router = APIRouter()
+router = APIRouter(tags=["Cursos"])
 
 @router.get("/cursos", response_model=List[CursoResponse])
 def listar_cursos(db: Session = Depends(get_db)):
