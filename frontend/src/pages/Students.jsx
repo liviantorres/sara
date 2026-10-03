@@ -14,6 +14,8 @@ export default function Students() {
     const [filtroIra, setFiltroIra] = useState("");
     const [filtroSemestre, setFiltroSemestre] = useState("");
 
+    const [estatisticas, setEstatisticas] = useState({ total: 0, ira_medio: 0 })
+
     const buscarAlunos = async () => {
         setCarregando(true);
         try {
@@ -26,6 +28,15 @@ export default function Students() {
             if (filtroSemestre) url += `&semestre=${filtroSemestre}`;
 
             const response = await api.get(url);
+            
+            let urlStats = `/api/alunos/estatisticas?`;
+            if (filtroMatricula) urlStats += `&matricula=${filtroMatricula}`;
+            if (filtroSituacao !== "") urlStats += `&formado=${filtroSituacao}`;
+            if (filtroIra) urlStats += `&ira_max=${filtroIra}`;
+            if (filtroSemestre) urlStats += `&semestre=${filtroSemestre}`;
+            const responseStats = await api.get(urlStats);
+            setEstatisticas(responseStats.data);
+
             setAlunos(response.data);
         } catch (error) {
             console.error("Erro ao buscar alunos:", error);
@@ -47,8 +58,8 @@ export default function Students() {
                     title="Estudantes."
                     description="Gerencie o histórico de matrículas, consulte índices de rendimento (IRA) e acompanhe a situação atual dos discentes."
                     stats={[
-                        { label: "Total Registrado", value: "1.024" },
-                        { label: "IRA Médio", value: "6.8", color: "text-green-600" }
+                        { label: "Total Registrado", value: estatisticas.total },
+                        { label: "IRA Médio", value: estatisticas.ira_medio, color: "text-green-600" }
                     ]}
                 />
 
@@ -62,8 +73,14 @@ export default function Students() {
                                 value={filtroMatricula}
                                 onChange={(e) => setFiltroMatricula(e.target.value)}
                                 className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 pl-4 pr-10 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setPagina(0);
+                                        buscarAlunos();
+                                    }
+                                }}
                             />
-                            <button onClick={() => { setPagina(0); buscarAlunos(); }} className="absolute right-3 top-2.5 text-gray-400 hover:text-[#005386] transition-colors">
+                            <button onClick={() => { setPagina(0); buscarAlunos(); }} className="cursor-pointer absolute right-3 top-2.5 text-gray-400 hover:text-[#005386] transition-colors">
                                 <Search size={20} />
                             </button>
                         </div>
@@ -129,6 +146,7 @@ export default function Students() {
                                     onClick={() => setPagina(pagina - 1)}
                                     disabled={pagina === 0}
                                     className="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    title="Voltar a página"
                                 >
                                     <ChevronLeft size={16} /> Anterior
                                 </button>
@@ -136,6 +154,7 @@ export default function Students() {
                                     onClick={() => setPagina(pagina + 1)}
                                     disabled={alunos.length < 10}
                                     className="cursor-pointer flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-[#005386] rounded-lg hover:bg-[#003f66] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    title="Passar a página"
                                 >
                                     Próxima <ChevronRight size={16} />
                                 </button>

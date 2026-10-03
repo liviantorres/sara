@@ -8,3 +8,7 @@ class ListarAlunosUseCases:
                  formado: bool=None, ira_max: float=None, semestre: int=None):
         alunos = self.repository.listar_todos(pular, limite, curso_id, matricula, formado, ira_max, semestre)
         return alunos
+
+    def obter_estatisticas(self, curso_id: int = None, matricula: int = None, 
+                           formado: bool = None, ira_max: float = None, semestre: int = None):
+        return self.repository.obter_estatisticas(curso_id, matricula, formado, ira_max, semestre)
