@@ -24,7 +24,11 @@ export default function Login() {
     setError(null);
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/login", { email, password });
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
+
+      const response = await api.post("/api/auth/login", params);
 
       const token = response.data.token || response.data.access_token;
         
