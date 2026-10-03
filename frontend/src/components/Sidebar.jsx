@@ -10,7 +10,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const navItems = [
     { label: "Página Inicial", path: "/inicial", icon: Home },
     { label: "Análises", path: "/analises", icon: BarChart2 },
-    { label: "Estudantes", path: "/estudantes", icon: Users },
+    { label: "Estudantes", path: "/alunos", icon: Users },
     { label: "Relatórios", path: "/relatorios", icon: FileText },
   ];
 
