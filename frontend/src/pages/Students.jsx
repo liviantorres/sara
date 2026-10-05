@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Table from "../components/Table";
 import { api } from "../services/api";
-import { ChevronLeft, ChevronRight, Search, GraduationCap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Download } from "lucide-react";
 import PageHeader from "../components/PageHeader";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Students() {
     const [alunos, setAlunos] = useState([]);
@@ -48,6 +51,75 @@ export default function Students() {
             setCarregando(false);
         }
     };
+        const gerarRelatorio = async (tipo) => {
+        try {
+
+            let url = `/api/alunos?pular=0&limite=999999`;
+            if (filtroMatricula) url += `&matricula=${filtroMatricula}`;
+            if (filtroSituacao !== "") url += `&formado=${filtroSituacao}`;
+            if (filtroIra) url += `&ira_max=${filtroIra}`;
+            if (filtroSemestre) url += `&semestre=${filtroSemestre}`;
+            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
+
+            const response = await api.get(url);
+            const dados = response.data;
+
+            if (dados.length === 0) {
+                alert("Nenhum dado para exportar!");
+                return;
+            }
+
+            const dadosRicos = dados.map(aluno => ({
+                "Matrícula": aluno.matricula,
+                "Curso": cursos.find(c => c.id === aluno.curso_id)?.nome || aluno.curso_id,
+                "Situação": aluno.formado ? "Formado" : "Cursando",
+                "IRA": aluno.ira,
+                "Sem. Atual": aluno.semestre_atual,
+                "Ano Ingresso": aluno.ano_ingresso,
+                "Prazo Max": aluno.prazo_conclusao || "-",
+                "Reprovações": aluno.total_reprovacoes || 0,
+                "Trancamentos": aluno.qtd_trancamentos || 0,
+                "CH Total": aluno.ch_total || 0,
+                "Origem": aluno.municipio_reside || "N/A"
+            }));
+
+            if (tipo === 'csv') {
+                const worksheet = XLSX.utils.json_to_sheet(dadosRicos);
+                const csv = XLSX.utils.sheet_to_csv(worksheet);
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "SARA_Alunos.csv";
+                link.click();
+            } 
+            else if (tipo === 'excel') {
+                const worksheet = XLSX.utils.json_to_sheet(dadosRicos);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Alunos SARA");
+                XLSX.writeFile(workbook, "SARA_Alunos.xlsx");
+            } 
+            else if (tipo === 'pdf') {
+                const doc = new jsPDF('landscape'); 
+                doc.text("Relatório de Alunos - Sistema SARA", 14, 15);
+                
+                const cabecalhos = Object.keys(dadosRicos[0]);
+                const linhas = dadosRicos.map(d => Object.values(d));
+
+                autoTable(doc, {
+                    head: [cabecalhos],
+                    body: linhas,
+                    startY: 20,
+                    theme: 'striped',
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [0, 83, 134] } 
+                });
+                doc.save("SARA_Alunos.pdf");
+            }
+        } catch (error) {
+            console.error("Erro ao gerar relatório:", error);
+            alert("Ocorreu um erro ao gerar o relatório.");
+        }
+    };
 
     useEffect(() => {
         const carregarCursos = async () => {
@@ -78,6 +150,23 @@ export default function Students() {
                         { label: "IRA Médio", value: estatisticas.ira_medio, color: "text-green-600" }
                     ]}
                 />
+    
+                  <div className="flex justify-end mb-4">
+                      <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                          <div className="px-4 py-2 bg-gray-50 border-r border-gray-200 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                              <Download size={16} /> Exportar
+                          </div>
+                          <button onClick={() => gerarRelatorio('csv')} className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-medium text-sm transition-colors border-r border-gray-200 cursor-pointer">
+                              CSV
+                          </button>
+                          <button onClick={() => gerarRelatorio('excel')} className="px-4 py-2 hover:bg-gray-100 text-green-700 font-medium text-sm transition-colors border-r border-gray-200 cursor-pointer">
+                              Excel
+                          </button>
+                          <button onClick={() => gerarRelatorio('pdf')} className="px-4 py-2 hover:bg-gray-100 text-red-600 font-medium text-sm transition-colors cursor-pointer">
+                              PDF
+                          </button>
+                      </div>
+                  </div>
 
                 <div className="bg-white rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end shadow-sm shadow-blue-900/5 border border-gray-100">
                     <div className="flex-1 min-w-[200px]">
