@@ -121,9 +121,11 @@ export default function StudentProfile() {
                                 </p>
                             </div>
                         </div>
+                       {/**  
                         <button className="px-4 py-2 bg-white text-red-700 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors shadow-sm">
                             Notificar Coordenação
                         </button>
+                        */}
                     </div>
                 )}
                 

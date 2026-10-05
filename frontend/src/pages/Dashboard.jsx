@@ -3,6 +3,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import PageHeader from "../components/PageHeader";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Download } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -48,6 +52,79 @@ export default function Dashboard() {
     ? ((dados.total_retidos / dados.total_alunos) * 100).toFixed(1)
     : "0.0";
 
+      const gerarRelatorioDashboard = (tipo) => {
+        if (dados.total_alunos === 0) return alert("Nenhum dado para exportar");
+
+        const nomeCurso = filtroCurso 
+            ? cursos.find(c => String(c.id) === String(filtroCurso))?.nome 
+            : "Todos os Cursos (Visão Geral)";
+
+        if (tipo === 'csv') {
+            const worksheet = XLSX.utils.json_to_sheet(dados.grafico);
+            const csv = XLSX.utils.sheet_to_csv(worksheet);
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "SARA_Evolucao_Historica.csv";
+            link.click();
+        } 
+        else if (tipo === 'excel') {
+            const workbook = XLSX.utils.book_new();
+            
+            const resumo = [{ "Filtro": nomeCurso, "Alunos": dados.total_alunos, "Retidos": dados.total_retidos, "Taxa": `${taxaRetencao}%` }];
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(resumo), "Resumo");
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dados.grafico), "Evolução Histórica");
+            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dados.grafico_semestres), "Por Semestre");
+            
+            if (filtroCurso && dados.grafico_materias) {
+                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dados.grafico_materias), "Matérias Gargalo");
+            } else if (dados.grafico_cursos) {
+                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dados.grafico_cursos), "Ranking Cursos");
+            }
+            XLSX.writeFile(workbook, "Dashboard_SARA.xlsx");
+        } 
+        else if (tipo === 'pdf') {
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text("Relatório Gerencial - Dashboard SARA", 14, 15);
+            doc.setFontSize(11);
+            doc.text(`Filtro: ${nomeCurso}`, 14, 22);
+            doc.text(`Total de Alunos: ${dados.total_alunos} | Retidos: ${dados.total_retidos} (${taxaRetencao}%)`, 14, 28);
+
+            let posY = 35;
+
+            doc.text("Evolução Histórica de Retenção", 14, posY);
+            autoTable(doc, {
+                head: [['Ano', 'Total Ingressantes', 'Alunos Retidos']],
+                body: dados.grafico.map(g => [g.ano, g.total || 0, g.retidos]),
+                startY: posY + 3,
+                theme: 'striped',
+                headStyles: { fillColor: [0, 83, 134] }
+            });
+            posY = doc.lastAutoTable.finalY + 10;
+
+            if (filtroCurso && dados.grafico_materias?.length > 0) {
+                doc.text("Top 5 Matérias Gargalo", 14, posY);
+                autoTable(doc, {
+                    head: [['Disciplina', 'Reprovações']],
+                    body: dados.grafico_materias.map(m => [m.materia, m.reprovacoes]),
+                    startY: posY + 3,
+                    theme: 'striped',
+                    headStyles: { fillColor: [220, 38, 38] } 
+                });
+            } else if (dados.grafico_cursos?.length > 0) {
+                doc.text("Ranking de Retenção por Curso", 14, posY);
+                autoTable(doc, {
+                    head: [['Curso', 'Alunos Retidos']],
+                    body: dados.grafico_cursos.map(c => [c.curso, c.retidos]),
+                    startY: posY + 3,
+                    theme: 'striped',
+                    headStyles: { fillColor: [0, 83, 134] }
+                });
+            }
+            doc.save("Dashboard_SARA.pdf");
+        }
+    };
 
   const cards = [
     { title: "Total de alunos", value: dados.total_alunos, cor: "text-[#005386]" },
@@ -72,23 +149,41 @@ export default function Dashboard() {
             description="Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica."
           />
 
-          <div className="flex justify-end mb-6 -mt-2">
-            <div className="w-80 bg-white p-3 rounded-xl border border-gray-200 shadow-sm shadow-blue-900/5">
-              <label className="block text-[10px] font-bold text-[#005386] uppercase tracking-widest mb-1.5 px-1">
-                Visão Departamental
-              </label>
-              <select
-                value={filtroCurso}
-                onChange={(e) => setFiltroCurso(e.target.value)}
-                className="w-full bg-slate-50 border border-gray-100 rounded-lg py-2 px-3 text-sm text-gray-800 focus:bg-white focus:border-[#005386] focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer font-semibold transition-all"
-              >
-                <option value="">🌎 Visão Global (Toda a Universidade)</option>
-                {cursos.map(curso => (
-                  <option key={curso.id} value={curso.id}>{curso.nome}</option>
-                ))}
-              </select>
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4 mb-6 -mt-2">
+              
+              <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-[42px]">
+                  <div className="px-4 bg-gray-50 border-r border-gray-200 text-[#005386] font-bold text-[11px] uppercase tracking-widest flex items-center gap-2">
+                      <Download size={16} /> Relatório
+                  </div>
+                  <button onClick={() => gerarRelatorioDashboard('csv')} className="px-4 hover:bg-gray-100 text-gray-600 font-semibold text-sm transition-colors border-r border-gray-200 cursor-pointer flex items-center">
+                      CSV
+                  </button>
+                  <button onClick={() => gerarRelatorioDashboard('excel')} className="px-4 hover:bg-gray-100 text-green-700 font-semibold text-sm transition-colors border-r border-gray-200 cursor-pointer flex items-center">
+                      Excel
+                  </button>
+                  <button onClick={() => gerarRelatorioDashboard('pdf')} className="px-4 hover:bg-gray-100 text-red-600 font-semibold text-sm transition-colors cursor-pointer flex items-center">
+                      PDF
+                  </button>
+              </div>
+
+      
+              <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-[42px]">
+                <div className="px-4 bg-gray-50 border-r border-gray-200 text-[#005386] font-bold text-[11px] uppercase tracking-widest flex items-center">
+                  Filtrar por curso
+                </div>
+                <select
+                  value={filtroCurso}
+                  onChange={(e) => setFiltroCurso(e.target.value)}
+                  className="bg-white px-3 text-sm text-gray-800 focus:outline-none cursor-pointer font-semibold min-w-[200px]"
+                >
+                  <option value="">Visão Geral (Todos)</option>
+                  {cursos.map(curso => (
+                    <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                  ))}
+                </select>
+              </div>
+              
             </div>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {cards.map((card, idx) => (
