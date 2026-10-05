@@ -1,17 +1,17 @@
 // src/components/Sidebar.jsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, BarChart2, Users, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Users, BookOpen, Database, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const location = useLocation();
   const currentPath = location.pathname;
 
   const navItems = [
-    { label: "Página Inicial", path: "/inicial", icon: Home },
-    { label: "Análises", path: "/analises", icon: BarChart2 },
-    { label: "Estudantes", path: "/alunos", icon: Users },
-    { label: "Relatórios", path: "/relatorios", icon: FileText },
+    { label: "Dashboard", path: "/inicial", icon: Home },
+    { label: "Alunos", path: "/alunos", icon: Users },
+    { label: "Disciplinas", path: "/disciplinas", icon: BookOpen },
+    { label: "Importar Dados", path: "/importacao", icon: Database },
   ];
 
   return (

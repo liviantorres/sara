@@ -75,7 +75,7 @@ export default function Dashboard() {
           <div className="flex justify-end mb-6 -mt-2">
             <div className="w-80 bg-white p-3 rounded-xl border border-gray-200 shadow-sm shadow-blue-900/5">
               <label className="block text-[10px] font-bold text-[#005386] uppercase tracking-widest mb-1.5 px-1">
-                ⚙️ Visão Departamental
+                Visão Departamental
               </label>
               <select
                 value={filtroCurso}
@@ -97,6 +97,55 @@ export default function Dashboard() {
                 <span className={`text-4xl font-black ${card.cor}`}>{card.value}</span>
               </div>
             ))}
+          </div>
+           <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Ranking de Retenção por Curso</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Comparativo global da universidade para identificar quais departamentos precisam de maior intervenção.
+              </p>
+            </div>
+          {!filtroCurso ? (
+            
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Ranking de Retenção por Curso</h3>
+                <p className="text-sm text-gray-500 mt-1">Comparativo global da universidade para identificar quais departamentos precisam de intervenção.</p>
+              </div>
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_cursos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                    <XAxis type="number" stroke="#94A3B8" tick={{ fontSize: 12 }} />
+                    <YAxis dataKey="curso" type="category" stroke="#94A3B8" tick={{ fontSize: 11, fontWeight: 600, fill: '#475569' }} width={200} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#F8FAFC' }} />
+                    <Bar name="Alunos Retidos" dataKey="retidos" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          ) : (
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">Top 5 Matérias Gargalo do Curso</h3>
+                <p className="text-sm text-gray-500 mt-1">Disciplinas com maior índice de reprovações bloqueando o fluxo dos alunos deste departamento.</p>
+              </div>
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_materias} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                    <XAxis type="number" stroke="#94A3B8" tick={{ fontSize: 12 }} />
+                    <YAxis dataKey="materia" type="category" stroke="#94A3B8" tick={{ fontSize: 11, fontWeight: 800, fill: '#475569' }} width={220} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#FEE2E2' }} />
+                    <Bar name="Total de Reprovações" dataKey="reprovacoes" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

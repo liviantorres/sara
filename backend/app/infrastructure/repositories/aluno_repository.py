@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
-from app.infrastructure.db.models import AlunoModel
-from sqlalchemy import func, or_, case
+from app.infrastructure.db.models import AlunoModel, CursoModel
+from app.infrastructure.db.models.historico_disciplina_model import HistoricoDisciplinaModel
+from app.infrastructure.db.models.disciplina_model import DisciplinaModel
+from sqlalchemy import func, or_, case, desc
 
 class AlunoRepository:
     def __init__(self, db: Session):
@@ -69,12 +71,50 @@ class AlunoRepository:
             AlunoModel.formado == False, 
             AlunoModel.semestre_atual > tempo_ideal
         )
+        
+        q_graf_curso = self.db.query(CursoModel.nome, func.count(AlunoModel.matricula).label('retidos')).join(
+            AlunoModel, CursoModel.id == AlunoModel.curso_id
+        ).filter(
+            AlunoModel.formado == False,
+            AlunoModel.semestre_atual > tempo_ideal
+        ).group_by(CursoModel.nome).order_by(desc('retidos')).all()
+
+        dados_cursos = [{"curso": c.nome, "retidos": c.retidos} for c in q_graf_curso]
+
+        dados_materias = []
 
         if curso_id is not None:
             q_todos = q_todos.filter(AlunoModel.curso_id == curso_id)
             q_retidos = q_retidos.filter(AlunoModel.curso_id == curso_id)
             q_graf_todos = q_graf_todos.filter(AlunoModel.curso_id == curso_id)
             q_graf_retidos = q_graf_retidos.filter(AlunoModel.curso_id == curso_id)
+
+            q_materias = self.db.query(
+                HistoricoDisciplinaModel.disciplina_codigo,
+                DisciplinaModel.nome,
+                func.sum(HistoricoDisciplinaModel.qtd_reprovado).label('reprovacoes')
+            ).join(
+                AlunoModel, HistoricoDisciplinaModel.aluno_matricula == AlunoModel.matricula
+            ).join(
+                DisciplinaModel, HistoricoDisciplinaModel.disciplina_codigo == DisciplinaModel.codigo
+            ).filter(
+                AlunoModel.curso_id == curso_id,
+                HistoricoDisciplinaModel.qtd_reprovado > 0
+            ).group_by(
+                HistoricoDisciplinaModel.disciplina_codigo, 
+                DisciplinaModel.nome
+            ).order_by(desc('reprovacoes')).limit(5).all()
+
+            for item in q_materias:
+                if not item.nome or str(item.nome).strip().upper() == "A DEFINIR":
+                    nome_exibicao = f"{item.disciplina_codigo} (Código)" 
+                else:
+                    nome_exibicao = item.nome 
+                
+                dados_materias.append({
+                    "materia": nome_exibicao,
+                    "reprovacoes": item.reprovacoes
+                })
 
         total_alunos = q_todos.count()
         total_retidos = q_retidos.count()
@@ -114,5 +154,7 @@ class AlunoRepository:
             "total_alunos": total_alunos,
             "total_retidos": total_retidos,
             "grafico": dados_graficos,
-            "grafico_semestres": dados_semestres
+            "grafico_semestres": dados_semestres,
+            "grafico_cursos": dados_cursos,
+            "grafico_materias": dados_materias
         }
