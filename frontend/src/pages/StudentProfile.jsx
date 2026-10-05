@@ -64,7 +64,9 @@ export default function StudentProfile() {
         { name: "Reprovadas/Pendentes", value: pendentes, color: "#CBD5E1" } 
     ];
 
-    const isRetido = !aluno.formado && (aluno.semestre_atual >= 12 || aluno.ira < 5.0);
+    const limiteSemestres = [2, 4, 5].includes(aluno.curso_id) ? 10 : 8;
+        
+    const isRetido = !aluno.formado && (aluno.semestre_atual > limiteSemestres);
     
     let statusAcademico = "Fluxo Regular";
     let corStatus = "text-[#005386]"; 

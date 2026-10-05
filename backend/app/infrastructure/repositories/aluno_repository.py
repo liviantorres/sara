@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models import AlunoModel
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case
 
 class AlunoRepository:
     def __init__(self, db: Session):
@@ -51,16 +51,23 @@ class AlunoRepository:
         }
 
     def obter_dados_dashboard(self, curso_id: int = None):
+
+        tempo_ideal = case(
+            (AlunoModel.curso_id.in_([2, 4, 5]), 10),
+            else_=8 
+        )
+         
         q_todos = self.db.query(AlunoModel)
+
         q_retidos = self.db.query(AlunoModel).filter(
             AlunoModel.formado == False, 
-            or_(AlunoModel.total_reprovacoes >= 3, AlunoModel.ira < 5.0)
+            AlunoModel.semestre_atual > tempo_ideal
         )
 
         q_graf_todos = self.db.query(AlunoModel.ano_ingresso, func.count(AlunoModel.matricula).label('total_ingressantes'))
         q_graf_retidos = self.db.query(AlunoModel.ano_ingresso, func.count(AlunoModel.matricula).label('retidos')).filter(
             AlunoModel.formado == False, 
-            or_(AlunoModel.total_reprovacoes >= 3, AlunoModel.ira < 5.0)
+            AlunoModel.semestre_atual > tempo_ideal
         )
 
         if curso_id is not None:
@@ -74,6 +81,23 @@ class AlunoRepository:
 
         total_ano_bd = q_graf_todos.group_by(AlunoModel.ano_ingresso).all()
         grafico_bd = q_graf_retidos.group_by(AlunoModel.ano_ingresso).order_by(AlunoModel.ano_ingresso).all()
+
+        q_graf_semestre = self.db.query(AlunoModel.semestre_atual, func.count(AlunoModel.matricula).label('retidos')).filter(
+            AlunoModel.formado == False, 
+            AlunoModel.semestre_atual > tempo_ideal
+        )
+        if curso_id is not None:
+            q_graf_semestre = q_graf_semestre.filter(AlunoModel.curso_id == curso_id)
+
+        grafico_semestre_bd = q_graf_semestre.group_by(AlunoModel.semestre_atual).order_by(AlunoModel.semestre_atual).all()
+
+        dados_semestres = []
+        for item in grafico_semestre_bd:
+            if item.semestre_atual is not None:
+                dados_semestres.append({
+                    "semestre": f"{item.semestre_atual}º Sem",
+                    "retidos": item.retidos
+                })
         
         dict_total_ano = {item.ano_ingresso: item.total_ingressantes for item in total_ano_bd}
 
@@ -89,5 +113,6 @@ class AlunoRepository:
         return {
             "total_alunos": total_alunos,
             "total_retidos": total_retidos,
-            "grafico": dados_graficos
+            "grafico": dados_graficos,
+            "grafico_semestres": dados_semestres
         }

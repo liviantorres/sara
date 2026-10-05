@@ -10,7 +10,7 @@ export default function Table({ data }) {
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                       <tr className="bg-blue-50/50 text-[#00427A] text-[13px] uppercase tracking-wider border-b border-blue-100/50">
+                        <tr className="bg-blue-50/50 text-[#00427A] text-[13px] uppercase tracking-wider border-b border-blue-100/50">
                             <th className="px-6 py-4 font-semibold">Matrícula</th>
                             <th className="px-6 py-4 font-semibold">IRA</th>
                             <th className="px-6 py-4 font-semibold">Semestre</th>
@@ -22,18 +22,20 @@ export default function Table({ data }) {
                         {data.map((aluno) => (
                             <tr key={aluno.matricula} className="hover:bg-blue-50/50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-[#005386]">{aluno.matricula}</td>
-                                
+
                                 <td className="px-6 py-4 font-medium">
                                     <span className={aluno.ira < 7 ? "text-red-600" : "text-green-600"}>
                                         {aluno.ira}
                                     </span>
                                 </td>
-                                
+
                                 <td className="px-6 py-4">{aluno.semestre_atual}º</td>
-                                                                <td className="px-6 py-4">
+                                <td className="px-6 py-4">
                                     {(() => {
-                                        const isRetido = !aluno.formado && (aluno.semestre_atual >= 12  || aluno.ira < 5.0);
-                                        
+                                        const limiteSemestres = [2, 4, 5].includes(aluno.curso_id) ? 10 : 8;
+
+                                        const isRetido = !aluno.formado && (aluno.semestre_atual > limiteSemestres);
+
                                         if (aluno.formado) {
                                             return (
                                                 <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-green-100 text-green-700 border border-green-200">
@@ -56,7 +58,7 @@ export default function Table({ data }) {
                                     })()}
                                 </td>
                                 <td className="px-6 py-4 flex justify-center">
-                                    <button 
+                                    <button
                                         onClick={() => navigate(`/alunos/${aluno.matricula}`)}
                                         className="cursor-pointer p-1.5 text-gray-500 hover:text-[#005386] hover:bg-gray-100 rounded transition-colors"
                                         title="Ver Perfil"

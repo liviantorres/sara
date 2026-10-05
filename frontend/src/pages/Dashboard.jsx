@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from "recharts";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import PageHeader from "../components/PageHeader";
@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // Carrega as opções de curso pro Dropdown
+
     const carregarCursos = async () => {
       try {
         const response = await api.get("/api/cursos");
@@ -28,12 +28,10 @@ export default function Dashboard() {
     carregarCursos();
   }, []);
 
-  // Carrega o Dashboard toda vez que o filtro mudar!
   useEffect(() => {
     const carregarDashboard = async () => {
       setCarregando(true);
       try {
-        // Passando o filtro na URL
         const url = filtroCurso ? `/api/alunos/dashboard?curso_id=${filtroCurso}` : "/api/alunos/dashboard";
         const response = await api.get(url);
         setDados(response.data);
@@ -68,13 +66,12 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-                              <PageHeader
+          <PageHeader
             tag="Painel Central"
             title={`Olá, ${userName}.`}
             description="Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica."
           />
 
-          {/* BARRA DE CONTROLE GLOBAL */}
           <div className="flex justify-end mb-6 -mt-2">
             <div className="w-80 bg-white p-3 rounded-xl border border-gray-200 shadow-sm shadow-blue-900/5">
               <label className="block text-[10px] font-bold text-[#005386] uppercase tracking-widest mb-1.5 px-1">
@@ -93,7 +90,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* CARTÕES DE RESUMO (Ficam abaixo do filtro agora!) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {cards.map((card, idx) => (
               <div key={idx} className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 text-left hover:shadow-md transition-shadow">
@@ -103,29 +99,47 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* GRÁFICO MESTRE */}
-          <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6">
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900">Evolução da Retenção por Ano de Ingresso</h3>
-              <p className="text-sm text-gray-500 mt-1">Comparativo entre o total de alunos matriculados e a quantidade que encontra-se retida atualmente.</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Retenção por Ano de Ingresso</h3>
+                <p className="text-sm text-gray-500 mt-1">Comparativo histórico de ingressantes vs retidos.</p>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dados.grafico} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="ano" stroke="#94A3B8" tick={{ fontSize: 12 }} tickMargin={10} />
+                    <YAxis stroke="#94A3B8" tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                    <Legend wrapperStyle={{ paddingTop: '10px' }} iconType="circle" />
+                    <Line name="Ingressantes" type="monotone" dataKey="total" stroke="#94A3B8" strokeWidth={3} dot={{ r: 3 }} />
+                    <Line name="Retidos" type="monotone" dataKey="retidos" stroke="#ef4444" strokeWidth={3} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dados.grafico} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="ano" stroke="#94A3B8" tick={{ fontSize: 13, fontWeight: 600, fill: '#64748B' }} tickMargin={10} />
-                  <YAxis stroke="#94A3B8" tick={{ fontSize: 12, fill: '#64748B' }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    labelStyle={{ fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-                  <Line name="Total de Ingressantes" type="monotone" dataKey="total" stroke="#94A3B8" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 7 }} />
-                  <Line name="Alunos Retidos" type="monotone" dataKey="retidos" stroke="#ef4444" strokeWidth={4} dot={{ r: 5, strokeWidth: 2 }} activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Onde os alunos estão travando?</h3>
+                <p className="text-sm text-gray-500 mt-1">Volume de alunos em risco agrupados por semestre atual.</p>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_semestres} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="semestre" stroke="#94A3B8" tick={{ fontSize: 12 }} tickMargin={10} />
+                    <YAxis stroke="#94A3B8" tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#F1F5F9' }} />
+                    <Bar name="Alunos Retidos" dataKey="retidos" fill="#005386" radius={[4, 4, 0, 0]} barSize={32} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
+
           </div>
         </>
       )}
