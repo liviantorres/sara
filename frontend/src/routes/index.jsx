@@ -12,6 +12,7 @@ const Disciplines = lazy(() => import("../pages/Disciplines"));
 const Reports = lazy(() => import("../pages/Reports"));
 const DataImport = lazy(() => import("../pages/DataImport"));
 const Analysis = lazy(() => import("../pages/Analysis"));
+const StudentProfile = lazy(() => import("../pages/StudentProfile"))
 
 
 const SuspenseWrapper = ({ children }) => (
@@ -44,6 +45,7 @@ export const appRoutes = createBrowserRouter([
           { path: "/relatorios", element: <SuspenseWrapper><Reports /></SuspenseWrapper> },
           { path: "/importacao-de-dados", element: <SuspenseWrapper><DataImport /></SuspenseWrapper> },
           { path: "/analises", element: <SuspenseWrapper><Analysis /></SuspenseWrapper> },
+          { path: "/alunos/:matricula", element: <SuspenseWrapper><StudentProfile /></SuspenseWrapper> },
         ],
       },
     ],

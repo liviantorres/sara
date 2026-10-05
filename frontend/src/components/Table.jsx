@@ -30,12 +30,31 @@ export default function Table({ data }) {
                                 </td>
                                 
                                 <td className="px-6 py-4">{aluno.semestre_atual}º</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
-                                        aluno.formado ? "bg-green-100 text-green-700 border border-green-200" : "bg-blue-50 text-[#005386] border border-blue-200"
-                                    }`}>
-                                        {aluno.formado ? "Formado" : "Cursando"}
-                                    </span>
+                                                                <td className="px-6 py-4">
+                                    {/* Lógica Rápida (Self-Invoking Function) para definir a badge da linha */}
+                                    {(() => {
+                                        const isRetido = !aluno.formado && (aluno.semestre_atual >= 12  || aluno.ira < 5.0);
+                                        
+                                        if (aluno.formado) {
+                                            return (
+                                                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-green-100 text-green-700 border border-green-200">
+                                                    Formado
+                                                </span>
+                                            );
+                                        }
+                                        if (isRetido) {
+                                            return (
+                                                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 flex items-center gap-1 w-max shadow-sm">
+                                                    <span className="text-[10px]">⚠️</span> Risco / Retido
+                                                </span>
+                                            );
+                                        }
+                                        return (
+                                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-[#005386] border border-blue-200">
+                                                Fluxo Regular
+                                            </span>
+                                        );
+                                    })()}
                                 </td>
                                 <td className="px-6 py-4 flex justify-center">
                                     <button 

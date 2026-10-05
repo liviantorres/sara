@@ -13,6 +13,8 @@ export default function Students() {
     const [filtroSituacao, setFiltroSituacao] = useState("");
     const [filtroIra, setFiltroIra] = useState("");
     const [filtroSemestre, setFiltroSemestre] = useState("");
+    const [filtroCurso, setFiltroCurso] = useState("");
+    const [cursos, setCursos] = useState([]);
 
     const [estatisticas, setEstatisticas] = useState({ total: 0, ira_medio: 0 })
 
@@ -26,6 +28,7 @@ export default function Students() {
             if (filtroSituacao !== "") url += `&formado=${filtroSituacao}`;
             if (filtroIra) url += `&ira_max=${filtroIra}`;
             if (filtroSemestre) url += `&semestre=${filtroSemestre}`;
+            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
 
             const response = await api.get(url);
             
@@ -34,6 +37,7 @@ export default function Students() {
             if (filtroSituacao !== "") urlStats += `&formado=${filtroSituacao}`;
             if (filtroIra) urlStats += `&ira_max=${filtroIra}`;
             if (filtroSemestre) urlStats += `&semestre=${filtroSemestre}`;
+            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
             const responseStats = await api.get(urlStats);
             setEstatisticas(responseStats.data);
 
@@ -46,8 +50,20 @@ export default function Students() {
     };
 
     useEffect(() => {
+        const carregarCursos = async () => {
+            try {
+                const response = await api.get("/api/cursos");
+                setCursos(response.data);
+            } catch (error) {
+                console.error("Erro ao carregar os cursos do Back-end:", error);
+            }
+        };
+        carregarCursos();
+    }, []); 
+
+    useEffect(() => {
         buscarAlunos();
-    }, [pagina, filtroSituacao, filtroIra, filtroSemestre]);
+    }, [pagina, filtroSituacao, filtroIra, filtroSemestre, filtroCurso]);
 
     return (
         <div className=" font-figtree bg-slate-50 min-h-screen">
@@ -99,6 +115,24 @@ export default function Students() {
                         </select>
                     </div>
 
+                    <div className="w-56">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Curso</label>
+                        <select 
+                            value={filtroCurso} 
+                            onChange={(e) => { setFiltroCurso(e.target.value); setPagina(0); }}
+                            className="cursor-pointer w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none cursor-pointer"
+                        >
+                            <option value="">Todos os Cursos</option>
+                            
+                            {cursos.map(curso => (
+                                <option key={curso.id} value={curso.id}>
+                                    {curso.nome}
+                                </option>
+                            ))}
+                            
+                        </select>
+                    </div>
+
                     <div className="w-32">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">IRA Máx.</label>
                         <input
@@ -119,10 +153,10 @@ export default function Students() {
                         />
                     </div>
 
-                    {(filtroMatricula || filtroSituacao || filtroIra || filtroSemestre) && (
+                    {(filtroMatricula || filtroSituacao || filtroIra || filtroSemestre || filtroCurso) && (
                         <button
                             onClick={() => {
-                                setFiltroMatricula(""); setFiltroSituacao(""); setFiltroIra(""); setFiltroSemestre(""); setPagina(0);
+                                setFiltroMatricula(""); setFiltroSituacao(""); setFiltroIra(""); setFiltroSemestre(""); setFiltroCurso(""); setPagina(0);
                             }}
                             className="cursor-pointer px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
