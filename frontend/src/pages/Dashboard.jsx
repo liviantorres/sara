@@ -1,63 +1,197 @@
-import React from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useAuth } from "../contexts/AuthContext"
-
-const data = [
-  { name: "Jan", retidos: 500, media: 900 },
-  { name: "Feb", retidos: 800, media: 1300 },
-  { name: "Mar", retidos: 600, media: 1500 },
-  { name: "Apr", retidos: 1000, media: 1100 },
-  { name: "May", retidos: 900, media: 1050 },
-  { name: "Jun", retidos: 1100, media: 1600 },
-  { name: "Jul", retidos: 1500, media: 2100 },
-  { name: "Aug", retidos: 1800, media: 2300 },
-];
+import React, { useEffect, useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from "recharts";
+import { useAuth } from "../contexts/AuthContext";
+import { api } from "../services/api";
+import PageHeader from "../components/PageHeader";
 
 export default function Dashboard() {
-
-  const {user, signOut } = useAuth();
+  const { user } = useAuth();
   const userName = user?.nome || "Usuário SARA";
+  const [filtroCurso, setFiltroCurso] = useState("");
+  const [cursos, setCursos] = useState([]);
+
+  const [dados, setDados] = useState({
+    total_alunos: 0,
+    total_retidos: 0,
+    grafico: []
+  });
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+
+    const carregarCursos = async () => {
+      try {
+        const response = await api.get("/api/cursos");
+        setCursos(response.data);
+      } catch (error) { }
+    };
+    carregarCursos();
+  }, []);
+
+  useEffect(() => {
+    const carregarDashboard = async () => {
+      setCarregando(true);
+      try {
+        const url = filtroCurso ? `/api/alunos/dashboard?curso_id=${filtroCurso}` : "/api/alunos/dashboard";
+        const response = await api.get(url);
+        setDados(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar Dashboard:", error);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    carregarDashboard();
+  }, [filtroCurso]);
+
+  const taxaRetencao = dados.total_alunos > 0
+    ? ((dados.total_retidos / dados.total_alunos) * 100).toFixed(1)
+    : "0.0";
+
+
+  const cards = [
+    { title: "Total de alunos", value: dados.total_alunos, cor: "text-[#005386]" },
+    { title: "Retidos (Em Risco)", value: dados.total_retidos, cor: "text-red-600" },
+    { title: "Taxa de Retenção", value: `${taxaRetencao}%`, cor: taxaRetencao > 30 ? "text-red-600" : "text-green-600" },
+    { title: "Turmas Analisadas", value: dados.grafico.length, cor: "text-[#005386]" }
+  ];
 
   return (
-    <>
-      <div className="mb-8">
-        <h2 className="text-3xl font-semibold font-figtree text-gray-900">Olá, {userName}</h2>
-        <p className="text-gray-800 mt-1 text-base font-figtree">Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica.</p>
-        <p className="text-xs text-gray-600 mt-2 font-figtree">Última atualização: 22/07/2026 às 08:15</p>
-      </div>
+    <div className="font-figtree">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          { title: "Total de alunos", value: "565" },
-          { title: "Retidos", value: "368" },
-          { title: "Taxa de Retenção", value: "70,4%" },
-          { title: "Alertas", value: "12" },
-        ].map((card, idx) => (
-          <div key={idx} className="bg-white border border-gray-300 rounded-xl p-6 text-center">
-            <span className="text-lg font-medium text-gray-700 block mb-2 font-figtree">{card.title}</span>
-            <span className="text-4xl font-bold font-figtree text-gray-900">{card.value}</span>
-          </div>
-        ))}
-      </div>
 
-      {/* Gráfico */}
-      <div className="bg-white border border-gray-300 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-800 font-figtree">Evolução da Retenção</h3>
-        <p className="text-xs text-gray-400 mb-6 font-figtree">Neste gráfico, é demonstrada a evolução da retenção ao longo dos anos.</p>
-        
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-              <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="retidos" stroke="#0284C7" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="media" stroke="#F59E0B" strokeWidth={3} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+      {carregando ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-[#005386] font-bold animate-pulse text-lg">Processando base de dados institucional...</p>
         </div>
-      </div>
-    </>
+      ) : (
+        <>
+          <PageHeader
+            tag="Painel Central"
+            title={`Olá, ${userName}.`}
+            description="Bem-vindo ao Sistema de Análise e Monitoramento da Retenção Acadêmica."
+          />
+
+          <div className="flex justify-end mb-6 -mt-2">
+            <div className="w-80 bg-white p-3 rounded-xl border border-gray-200 shadow-sm shadow-blue-900/5">
+              <label className="block text-[10px] font-bold text-[#005386] uppercase tracking-widest mb-1.5 px-1">
+                Visão Departamental
+              </label>
+              <select
+                value={filtroCurso}
+                onChange={(e) => setFiltroCurso(e.target.value)}
+                className="w-full bg-slate-50 border border-gray-100 rounded-lg py-2 px-3 text-sm text-gray-800 focus:bg-white focus:border-[#005386] focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer font-semibold transition-all"
+              >
+                <option value="">🌎 Visão Global (Toda a Universidade)</option>
+                {cursos.map(curso => (
+                  <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {cards.map((card, idx) => (
+              <div key={idx} className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 text-left hover:shadow-md transition-shadow">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">{card.title}</span>
+                <span className={`text-4xl font-black ${card.cor}`}>{card.value}</span>
+              </div>
+            ))}
+          </div>
+           <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Ranking de Retenção por Curso</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Comparativo global da universidade para identificar quais departamentos precisam de maior intervenção.
+              </p>
+            </div>
+          {!filtroCurso ? (
+            
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Ranking de Retenção por Curso</h3>
+                <p className="text-sm text-gray-500 mt-1">Comparativo global da universidade para identificar quais departamentos precisam de intervenção.</p>
+              </div>
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_cursos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                    <XAxis type="number" stroke="#94A3B8" tick={{ fontSize: 12 }} />
+                    <YAxis dataKey="curso" type="category" stroke="#94A3B8" tick={{ fontSize: 11, fontWeight: 600, fill: '#475569' }} width={200} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#F8FAFC' }} />
+                    <Bar name="Alunos Retidos" dataKey="retidos" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          ) : (
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6 mb-8 mt-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">Top 5 Matérias Gargalo do Curso</h3>
+                <p className="text-sm text-gray-500 mt-1">Disciplinas com maior índice de reprovações bloqueando o fluxo dos alunos deste departamento.</p>
+              </div>
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_materias} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                    <XAxis type="number" stroke="#94A3B8" tick={{ fontSize: 12 }} />
+                    <YAxis dataKey="materia" type="category" stroke="#94A3B8" tick={{ fontSize: 11, fontWeight: 800, fill: '#475569' }} width={220} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#FEE2E2' }} />
+                    <Bar name="Total de Reprovações" dataKey="reprovacoes" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Retenção por Ano de Ingresso</h3>
+                <p className="text-sm text-gray-500 mt-1">Comparativo histórico de ingressantes vs retidos.</p>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dados.grafico} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="ano" stroke="#94A3B8" tick={{ fontSize: 12 }} tickMargin={10} />
+                    <YAxis stroke="#94A3B8" tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                    <Legend wrapperStyle={{ paddingTop: '10px' }} iconType="circle" />
+                    <Line name="Ingressantes" type="monotone" dataKey="total" stroke="#94A3B8" strokeWidth={3} dot={{ r: 3 }} />
+                    <Line name="Retidos" type="monotone" dataKey="retidos" stroke="#ef4444" strokeWidth={3} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+
+            <div className="bg-white border border-gray-200 shadow-sm shadow-blue-900/5 rounded-xl p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Onde os alunos estão travando?</h3>
+                <p className="text-sm text-gray-500 mt-1">Volume de alunos em risco agrupados por semestre atual.</p>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dados.grafico_semestres} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="semestre" stroke="#94A3B8" tick={{ fontSize: 12 }} tickMargin={10} />
+                    <YAxis stroke="#94A3B8" tick={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#F1F5F9' }} />
+                    <Bar name="Alunos Retidos" dataKey="retidos" fill="#005386" radius={[4, 4, 0, 0]} barSize={32} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          </div>
+        </>
+      )}
+    </div>
   );
 }
