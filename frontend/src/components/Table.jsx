@@ -31,7 +31,6 @@ export default function Table({ data }) {
                                 
                                 <td className="px-6 py-4">{aluno.semestre_atual}º</td>
                                                                 <td className="px-6 py-4">
-                                    {/* Lógica Rápida (Self-Invoking Function) para definir a badge da linha */}
                                     {(() => {
                                         const isRetido = !aluno.formado && (aluno.semestre_atual >= 12  || aluno.ira < 5.0);
                                         

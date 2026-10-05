@@ -36,7 +36,7 @@ export default function PageHeader({ tag, title, description, stats }) {
                 )}
             </div>
 
-            <div className="h-1.5 w-full bg-gradient-to-r from-[#005386] via-[#00A3E0] to-transparent rounded-full mt-8 opacity-90"></div>
+            <div className="h-1 w-full bg-gradient-to-r from-[#005386] via-[#00A3E0] to-transparent rounded-full mt-8 opacity-90"></div>
         </div>
     );
 }

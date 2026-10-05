@@ -37,3 +37,10 @@ def obter_estatisticas_alunos(
     return use_case.obter_estatisticas(
     curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre
     )
+
+@router.get("/alunos/dashboard")
+def obter_dashboard(curso_id: Optional[int] = None, db: Session = Depends(get_db)):
+    repository = AlunoRepository(db)
+    use_case = ListarAlunosUseCases(repository)
+
+    return use_case.obter_dados_dashboard(curso_id=curso_id)

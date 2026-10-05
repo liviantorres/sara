@@ -48,32 +48,26 @@ export default function StudentProfile() {
         );
     }
 
-    // --- LÓGICA DE CARGA HORÁRIA ---
-    // Você vai preencher aqui com os dados da sua pesquisa!
-    // Coloque o ID do Curso : Horas Totais
     const CARGA_HORARIA_CURSOS = {
-        1: 3200, // Exemplo: Computação são 3200 horas
-        2: 3600, // Exemplo: Engenharia são 3600 horas
+        1: 3200, 
+        2: 3600, 
     };
-    // Pega a meta do curso dele. Se o ID não estiver no dicionário acima, usa 3000 como padrão por enquanto.
+
     const metaHoras = CARGA_HORARIA_CURSOS[aluno.curso_id] || 3000; 
     const horasFaltantes = Math.max(0, metaHoras - aluno.ch_total);
     const porcentagemConclusao = Math.min(100, Math.round((aluno.ch_total / metaHoras) * 100));
 
-    // --- LÓGICA DOS GRÁFICOS ---
     const aprovadas = historico.filter(h => h.status_conclusao).length;
     const pendentes = historico.filter(h => !h.status_conclusao).length;
     const dadosPizza = [
-        { name: "Aprovadas", value: aprovadas, color: "#005386" }, // Azul UFC
-        { name: "Reprovadas/Pendentes", value: pendentes, color: "#CBD5E1" } // Cinza suave
+        { name: "Aprovadas", value: aprovadas, color: "#005386" }, 
+        { name: "Reprovadas/Pendentes", value: pendentes, color: "#CBD5E1" } 
     ];
 
-        // --- MÁQUINA DE DETECÇÃO DE RETENÇÃO ---
-    // Regra: Não está formado + (Tem 3 ou mais reprovações OU IRA menor que 5.0)
     const isRetido = !aluno.formado && (aluno.semestre_atual >= 12 || aluno.ira < 5.0);
     
     let statusAcademico = "Fluxo Regular";
-    let corStatus = "text-[#005386]"; // Azul
+    let corStatus = "text-[#005386]"; 
 
     if (aluno.formado) {
         statusAcademico = "Formado";
@@ -108,11 +102,10 @@ export default function StudentProfile() {
                         { label: "Semestre", value: `${aluno.semestre_atual}º` },
                         { label: "IRA", value: aluno.ira, color: aluno.ira < 5 ? "text-red-500" : "text-[#005386]" },
                         { label: "Residência", value: aluno.municipio_reside || "N/A" }, 
-                        { label: "Status Geral", value: statusAcademico, color: corStatus } // <-- AQUI!
+                        { label: "Status Geral", value: statusAcademico, color: corStatus } 
                     ]}
                 />
 
-                {/* ALERTA DE RETENÇÃO (Só aparece se a máquina detectar que ele está retido!) */}
                 {isRetido && (
                     <div className="mb-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -132,8 +125,6 @@ export default function StudentProfile() {
                     </div>
                 )}
                 
-
-                {/* PAINEL DE RISCO (Cores Uniformes e Elegantes) */}
                 <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
                     <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
                         <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Total Reprovações</p>
@@ -145,7 +136,6 @@ export default function StudentProfile() {
                     </div>
                     <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
                         <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Média de Notas</p>
-                        {/* O .toFixed(2) resolve as dezenas de casas decimais! */}
                         <p className="text-3xl font-black text-gray-900 mt-1">{Number(aluno.media_notas).toFixed(2)}</p>
                     </div>
                     <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
@@ -167,7 +157,6 @@ export default function StudentProfile() {
                     </div>
 
                 </div>
-                {/* Barra de Integralização (Fica lindo no final dos cards) */}
                 <div className="bg-white p-4 mb-8 border border-gray-200 rounded-xl shadow-sm md:col-span-2 flex flex-col justify-center">
                     <div className="flex justify-between items-end mb-2">
                         <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Progresso do Curso</p>
@@ -181,10 +170,9 @@ export default function StudentProfile() {
                     </div>
                 </div>
 
-                {/* SESSÃO DE GRÁFICOS */}
+        
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-                    {/* Gráfico 1: Eficiência */}
                     <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
                         <h3 className="text-lg font-bold text-gray-900 mb-6">Eficiência nas Matérias</h3>
                         <div className="h-64">
@@ -205,7 +193,6 @@ export default function StudentProfile() {
                         </div>
                     </div>
 
-                    {/* Gráfico 2: Matérias de Risco */}
                     <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
                         <h3 className="text-lg font-bold text-gray-900 mb-6">Matérias Críticas (Reprovações)</h3>
                         {materiasCriticas.length > 0 ? (
@@ -228,9 +215,7 @@ export default function StudentProfile() {
                     </div>
                 </div>
 
-                {/* A Tabela de Histórico continua aqui em baixo normal... */}
-
-                {/* Tabela do Histórico */}
+            
                 <div className="mt-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Histórico Completo de Disciplinas</h3>
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm shadow-blue-900/5">
