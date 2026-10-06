@@ -6,6 +6,7 @@ from app.infrastructure.db.session import get_db
 from app.infrastructure.repositories.disciplina_repository import DisciplinaRepository
 from app.application.use_cases.disciplina_use_cases import ListarDisciplinasUseCases
 from app.application.dtos.disciplina_dto import DisciplinaResponse
+from app.application.use_cases.disciplina_use_cases import ListarDisciplinasUseCases, ObterRankingDisciplinasUseCase
 
 router = APIRouter(tags=["Disciplinas"])
 
@@ -18,3 +19,10 @@ def listar_disciplinas(pular: int=0, limite: int=100, db: Session = Depends(get_
     
     return disciplinas
 
+@router.get("/disciplinas/ranking")
+def ranking_disciplinas(curso_id: int = None, limite: int = 50, db: Session = Depends(get_db)):
+    repository = DisciplinaRepository(db)
+    use_case = ObterRankingDisciplinasUseCase(repository)
+    ranking = use_case.executar(curso_id=curso_id, limite=limite)
+    
+    return ranking

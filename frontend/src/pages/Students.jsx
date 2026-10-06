@@ -1,25 +1,87 @@
 import React, { useEffect, useState } from "react";
-import Table from "../components/Table";
 import { api } from "../services/api";
-import { ChevronLeft, ChevronRight, Search, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportarAlunos } from "../utils/exportUtils";
+import ExportGroup from "../components/ExportGroup";
+import { useCursos } from "../hooks/useCursos";
+import StudentFilters from "../components/StudentFilters";
+import DataTable from "../components/DataTable";
+import { Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Students() {
     const [alunos, setAlunos] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [pagina, setPagina] = useState(0);
 
-    const [filtroMatricula, setFiltroMatricula] = useState("");
-    const [filtroSituacao, setFiltroSituacao] = useState("");
-    const [filtroIra, setFiltroIra] = useState("");
-    const [filtroSemestre, setFiltroSemestre] = useState("");
-    const [filtroCurso, setFiltroCurso] = useState("");
-    const [cursos, setCursos] = useState([]);
+    const [filtros, setFiltros] = useState({ matricula: "", situacao: "", ira: "", semestre: "", curso: "" });
+    const { cursos } = useCursos();
 
     const [estatisticas, setEstatisticas] = useState({ total: 0, ira_medio: 0 })
+
+    const navigate = useNavigate();
+
+    const colunasAlunos = [
+        {
+            header: "Matrícula",
+            cellClassName: "font-medium text-[#005386]",
+            accessor: "matricula"
+        },
+        {
+            header: "IRA",
+            render: (aluno) => (
+                <span className={aluno.ira < 7 ? "text-red-600 font-medium" : "text-green-600 font-medium"}>
+                    {aluno.ira}
+                </span>
+            )
+        },
+        {
+            header: "Semestre",
+            render: (aluno) => `${aluno.semestre_atual}º`
+        },
+        {
+            header: "Situação",
+            render: (aluno) => {
+                const limiteSemestres = [2, 4, 5].includes(aluno.curso_id) ? 10 : 8;
+                const isRetido = !aluno.formado && (aluno.semestre_atual > limiteSemestres);
+
+                if (aluno.formado) {
+                    return (
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-green-100 text-green-700 border border-green-200">
+                            Formado
+                        </span>
+                    );
+                }
+                if (isRetido) {
+                    return (
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 flex items-center gap-1 w-max shadow-sm">
+                            <span className="text-[10px]">⚠️</span> Risco / Retido
+                        </span>
+                    );
+                }
+                return (
+                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-[#005386] border border-blue-200">
+                        Fluxo Regular
+                    </span>
+                );
+            }
+        },
+        {
+            header: "Ações",
+            headerClassName: "text-center",
+            cellClassName: "flex justify-center",
+            render: (aluno) => (
+                <button
+                    onClick={() => navigate(`/alunos/${aluno.matricula}`)}
+                    className="cursor-pointer p-1.5 text-gray-500 hover:text-[#005386] hover:bg-gray-100 rounded transition-colors"
+                    title="Ver Perfil"
+                >
+                    <Eye size={18} />
+                </button>
+            )
+        }
+    ];
 
     const buscarAlunos = async () => {
         setCarregando(true);
@@ -27,21 +89,23 @@ export default function Students() {
             const pular = pagina * 10;
             let url = `/api/alunos?pular=${pular}&limite=10`;
 
-            if (filtroMatricula) url += `&matricula=${filtroMatricula}`;
-            if (filtroSituacao !== "") url += `&formado=${filtroSituacao}`;
-            if (filtroIra) url += `&ira_max=${filtroIra}`;
-            if (filtroSemestre) url += `&semestre=${filtroSemestre}`;
-            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
+            if (filtros.matricula) url += `&matricula=${filtros.matricula}`;
+            if (filtros.situacao !== "") url += `&formado=${filtros.situacao}`;
+            if (filtros.ira) url += `&ira_max=${filtros.ira}`;
+            if (filtros.semestre) url += `&semestre=${filtros.semestre}`;
+            if (filtros.curso) url += `&curso_id=${filtros.curso}`;
 
             const response = await api.get(url);
-            
+
             let urlStats = `/api/alunos/estatisticas?`;
-            if (filtroMatricula) urlStats += `&matricula=${filtroMatricula}`;
-            if (filtroSituacao !== "") urlStats += `&formado=${filtroSituacao}`;
-            if (filtroIra) urlStats += `&ira_max=${filtroIra}`;
-            if (filtroSemestre) urlStats += `&semestre=${filtroSemestre}`;
-            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
+            if (filtros.matricula) urlStats += `&matricula=${filtros.matricula}`;
+            if (filtros.situacao !== "") urlStats += `&formado=${filtros.situacao}`;
+            if (filtros.ira) urlStats += `&ira_max=${filtros.ira}`;
+            if (filtros.semestre) urlStats += `&semestre=${filtros.semestre}`;
+            if (filtros.curso) urlStats += `&curso_id=${filtros.curso}`;
+
             const responseStats = await api.get(urlStats);
+
             setEstatisticas(responseStats.data);
 
             setAlunos(response.data);
@@ -51,70 +115,24 @@ export default function Students() {
             setCarregando(false);
         }
     };
-        const gerarRelatorio = async (tipo) => {
-        try {
 
+    const limparFiltros = () => {
+        setFiltros({ matricula: "", situacao: "", ira: "", semestre: "", curso: "" });
+        setPagina(0);
+    };
+
+    const gerarRelatorio = async (tipo) => {
+
+        try {
             let url = `/api/alunos?pular=0&limite=999999`;
-            if (filtroMatricula) url += `&matricula=${filtroMatricula}`;
-            if (filtroSituacao !== "") url += `&formado=${filtroSituacao}`;
-            if (filtroIra) url += `&ira_max=${filtroIra}`;
-            if (filtroSemestre) url += `&semestre=${filtroSemestre}`;
-            if (filtroCurso) url += `&curso_id=${filtroCurso}`;
+            if (filtros.matricula) url += `&matricula=${filtros.matricula}`;
+            if (filtros.situacao !== "") url += `&formado=${filtros.situacao}`;
+            if (filtros.ira) url += `&ira_max=${filtros.ira}`;
+            if (filtros.semestre) url += `&semestre=${filtros.semestre}`;
+            if (filtros.curso) url += `&curso_id=${filtros.curso}`;
 
             const response = await api.get(url);
-            const dados = response.data;
-
-            if (dados.length === 0) {
-                alert("Nenhum dado para exportar!");
-                return;
-            }
-
-            const dadosRicos = dados.map(aluno => ({
-                "Matrícula": aluno.matricula,
-                "Curso": cursos.find(c => c.id === aluno.curso_id)?.nome || aluno.curso_id,
-                "Situação": aluno.formado ? "Formado" : "Cursando",
-                "IRA": aluno.ira,
-                "Sem. Atual": aluno.semestre_atual,
-                "Ano Ingresso": aluno.ano_ingresso,
-                "Prazo Max": aluno.prazo_conclusao || "-",
-                "Reprovações": aluno.total_reprovacoes || 0,
-                "Trancamentos": aluno.qtd_trancamentos || 0,
-                "CH Total": aluno.ch_total || 0,
-                "Origem": aluno.municipio_reside || "N/A"
-            }));
-
-            if (tipo === 'csv') {
-                const worksheet = XLSX.utils.json_to_sheet(dadosRicos);
-                const csv = XLSX.utils.sheet_to_csv(worksheet);
-                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "SARA_Alunos.csv";
-                link.click();
-            } 
-            else if (tipo === 'excel') {
-                const worksheet = XLSX.utils.json_to_sheet(dadosRicos);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Alunos SARA");
-                XLSX.writeFile(workbook, "SARA_Alunos.xlsx");
-            } 
-            else if (tipo === 'pdf') {
-                const doc = new jsPDF('landscape'); 
-                doc.text("Relatório de Alunos - Sistema SARA", 14, 15);
-                
-                const cabecalhos = Object.keys(dadosRicos[0]);
-                const linhas = dadosRicos.map(d => Object.values(d));
-
-                autoTable(doc, {
-                    head: [cabecalhos],
-                    body: linhas,
-                    startY: 20,
-                    theme: 'striped',
-                    styles: { fontSize: 8 },
-                    headStyles: { fillColor: [0, 83, 134] } 
-                });
-                doc.save("SARA_Alunos.pdf");
-            }
+            exportarAlunos(tipo, response.data, cursos);
         } catch (error) {
             console.error("Erro ao gerar relatório:", error);
             alert("Ocorreu um erro ao gerar o relatório.");
@@ -131,11 +149,11 @@ export default function Students() {
             }
         };
         carregarCursos();
-    }, []); 
+    }, []);
 
     useEffect(() => {
         buscarAlunos();
-    }, [pagina, filtroSituacao, filtroIra, filtroSemestre, filtroCurso]);
+    }, [pagina, filtros.situacao, filtros.ira, filtros.semestre, filtros.curso]);
 
     return (
         <div className=" font-figtree bg-slate-50 min-h-screen">
@@ -150,109 +168,21 @@ export default function Students() {
                         { label: "IRA Médio", value: estatisticas.ira_medio, color: "text-green-600" }
                     ]}
                 />
-    
-                  <div className="flex justify-end mb-4">
-                      <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                          <div className="px-4 py-2 bg-gray-50 border-r border-gray-200 text-gray-700 font-semibold text-sm flex items-center gap-2">
-                              <Download size={16} /> Exportar
-                          </div>
-                          <button onClick={() => gerarRelatorio('csv')} className="px-4 py-2 hover:bg-gray-100 text-gray-600 font-medium text-sm transition-colors border-r border-gray-200 cursor-pointer">
-                              CSV
-                          </button>
-                          <button onClick={() => gerarRelatorio('excel')} className="px-4 py-2 hover:bg-gray-100 text-green-700 font-medium text-sm transition-colors border-r border-gray-200 cursor-pointer">
-                              Excel
-                          </button>
-                          <button onClick={() => gerarRelatorio('pdf')} className="px-4 py-2 hover:bg-gray-100 text-red-600 font-medium text-sm transition-colors cursor-pointer">
-                              PDF
-                          </button>
-                      </div>
-                  </div>
 
-                <div className="bg-white rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end shadow-sm shadow-blue-900/5 border border-gray-100">
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Matrícula</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Buscar matrícula..."
-                                value={filtroMatricula}
-                                onChange={(e) => setFiltroMatricula(e.target.value)}
-                                className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 pl-4 pr-10 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        setPagina(0);
-                                        buscarAlunos();
-                                    }
-                                }}
-                            />
-                            <button onClick={() => { setPagina(0); buscarAlunos(); }} className="cursor-pointer absolute right-3 top-2.5 text-gray-400 hover:text-[#005386] transition-colors">
-                                <Search size={20} />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="w-44">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Situação</label>
-                        <select
-                            value={filtroSituacao}
-                            onChange={(e) => { setFiltroSituacao(e.target.value); setPagina(0); }}
-                            className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none cursor-pointer"
-                        >
-                            <option value="">Todas as situações</option>
-                            <option value="false">Cursando</option>
-                            <option value="true">Formado</option>
-                        </select>
-                    </div>
-
-                    <div className="w-56">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Curso</label>
-                        <select 
-                            value={filtroCurso} 
-                            onChange={(e) => { setFiltroCurso(e.target.value); setPagina(0); }}
-                            className="cursor-pointer w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none cursor-pointer"
-                        >
-                            <option value="">Todos os Cursos</option>
-                            
-                            {cursos.map(curso => (
-                                <option key={curso.id} value={curso.id}>
-                                    {curso.nome}
-                                </option>
-                            ))}
-                            
-                        </select>
-                    </div>
-
-                    <div className="w-32">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">IRA Máx.</label>
-                        <input
-                            type="number" step="0.1" placeholder="Ex: 7.0"
-                            value={filtroIra}
-                            onChange={(e) => { setFiltroIra(e.target.value); setPagina(0); }}
-                            className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none"
-                        />
-                    </div>
-
-                    <div className="w-32">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Semestre</label>
-                        <input
-                            type="number" placeholder="Ex: 5"
-                            value={filtroSemestre}
-                            onChange={(e) => { setFiltroSemestre(e.target.value); setPagina(0); }}
-                            className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none"
-                        />
-                    </div>
-
-                    {(filtroMatricula || filtroSituacao || filtroIra || filtroSemestre || filtroCurso) && (
-                        <button
-                            onClick={() => {
-                                setFiltroMatricula(""); setFiltroSituacao(""); setFiltroIra(""); setFiltroSemestre(""); setFiltroCurso(""); setPagina(0);
-                            }}
-                            className="cursor-pointer px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                            Limpar
-                        </button>
-                    )}
+                <div className="flex justify-end mb-4">
+                    <ExportGroup onExport={gerarRelatorio} />
                 </div>
+
+                <StudentFilters
+                    filtros={filtros}
+                    setFiltros={(novoFiltro) => {
+                        setFiltros(novoFiltro);
+                        setPagina(0);
+                    }}
+                    cursos={cursos}
+                    onSearch={() => { setPagina(0); buscarAlunos(); }}
+                    onClear={limparFiltros}
+                />
 
                 {carregando && alunos.length === 0 ? (
                     <div className="flex justify-center items-center h-64">
@@ -260,7 +190,12 @@ export default function Students() {
                     </div>
                 ) : (
                     <div className={`transition-opacity duration-300 ${carregando ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
-                        <Table data={alunos} />
+                        <DataTable
+                            columns={colunasAlunos}
+                            data={alunos}
+                            isLoading={carregando && alunos.length === 0}
+                            emptyMessage="Nenhum aluno encontrado com estes filtros."
+                        />
 
                         <div className="flex items-center justify-between mt-6">
                             <p className="text-sm font-medium text-gray-600">Página {pagina + 1}</p>

@@ -1,4 +1,9 @@
 from sqlalchemy.orm import Session
+from fastapi import UploadFile
+from typing import List
+import pandas as pd
+import io
+
 from app.infrastructure.db.models.disciplina_model import DisciplinaModel
 from app.infrastructure.db.models.curso_model import CursoModel
 from app.infrastructure.db.models.aluno_model import AlunoModel
@@ -8,8 +13,7 @@ class SyncDeysiDataUseCases:
     def __init__(self, db: Session):
         self.db = db
 
-    def executar(self):
-        import pandas as pd
+    def executar(self, arquivos: List[UploadFile]):
         info_cursos = {
             "cc.csv": {"sigla": "CC", "nome": "Ciência da Computação"},
             "ea.csv": {"sigla": "EA", "nome": "Engenharia Ambiental e Sanitária"},
@@ -18,24 +22,39 @@ class SyncDeysiDataUseCases:
             "si.csv": {"sigla": "SI", "nome": "Sistemas de Informação"}
         }
 
-        arquivos_cursos = ["cc.csv", "ea.csv", "ec.csv", "em.csv", "si.csv"]
-        pasta_dados = "../data/"
+        arquivos_cursos = [f for f in arquivos if f.filename in info_cursos.keys()]
+        arquivo_codigos = next((f for f in arquivos if f.filename == "codigos_disciplinas.csv"), None)
 
-        df_nomes = pd.read_csv("../data/codigos_disciplinas.csv", encoding='utf-8')
-        mapa_nomes = dict(zip(df_nomes['Codigo_CRT'], df_nomes['Nome_Disciplina']))
+        if not arquivos_cursos:
+            return {"mensagem": "Nenhum arquivo de curso válido (cc.csv, ec.csv, etc) foi enviado."}
+
+        mapa_nomes = {}
+        if arquivo_codigos:
+            df_nomes = pd.read_csv(io.StringIO(arquivo_codigos.file.read().decode('utf-8')))
+            mapa_nomes = dict(zip(df_nomes['Codigo_CRT'], df_nomes['Nome_Disciplina']))
+        else:
+            try:
+                df_nomes = pd.read_csv("../data/codigos_disciplinas.csv", encoding='utf-8')
+                mapa_nomes = dict(zip(df_nomes['Codigo_CRT'], df_nomes['Nome_Disciplina']))
+            except FileNotFoundError:
+                pass
 
         try:
             disciplinas_no_carrinho = set()
             for arquivo in arquivos_cursos:
-                caminho_completo = pasta_dados + arquivo
-                print(f"Sincronizando o arquivo: {arquivo}...")
+                print(f"Sincronizando o arquivo: {arquivo.filename}...")
 
-                existe_curso = self.db.query(CursoModel).filter_by(sigla=info_cursos[arquivo]["sigla"]).first()
+                conteudo = arquivo.file.read()
+                dados = pd.read_csv(io.StringIO(conteudo.decode('utf-8')))
+
+                existe_curso = self.db.query(CursoModel).filter_by(sigla=info_cursos[arquivo.filename]["sigla"]).first()
                 if not existe_curso:
-                    novo_curso = CursoModel(sigla=info_cursos[arquivo]["sigla"], nome=info_cursos[arquivo]["nome"])
+                    novo_curso = CursoModel(sigla=info_cursos[arquivo.filename]["sigla"], nome=info_cursos[arquivo.filename]["nome"])
                     self.db.add(novo_curso)
+                    self.db.flush()
 
-                dados = pd.read_csv(caminho_completo, encoding='utf-8')
+                curso_atual = self.db.query(CursoModel).filter_by(sigla=info_cursos[arquivo.filename]["sigla"]).first()
+
 
                 for coluna in dados.columns:
                     if coluna.startswith("CRT"):
@@ -48,8 +67,6 @@ class SyncDeysiDataUseCases:
                             disciplinas_no_carrinho.add(coluna)
                 self.db.flush()
 
-                curso_atual = self.db.query(CursoModel).filter_by(sigla=info_cursos[arquivo]["sigla"]).first()
-
                 for index, linha in dados.iterrows():
                     aluno_banco = self.db.query(AlunoModel).filter_by(matricula=linha["matricula"]).first()
                     
@@ -57,8 +74,8 @@ class SyncDeysiDataUseCases:
                         novo_aluno = AlunoModel(
                             matricula=linha["matricula"],
                             curso_id=curso_atual.id,  
-                            cidade_nasceu=linha["cidade_em_que_nasceu"],
-                            municipio_reside=linha["município_em_que_mora"],
+                            cidade_nasceu=linha.get("cidade_em_que_nasceu", ""),
+                            municipio_reside=linha.get("município_em_que_mora", ""),
                             ira=linha["ira"],
                             formado=(linha["formado"] == "SIM"),
                             semestre_atual=linha["semestre_em_que_o_aluno_está"],
@@ -71,7 +88,6 @@ class SyncDeysiDataUseCases:
                             variancia_notas=linha["variancia_das_notas"]
                         )
                         self.db.add(novo_aluno)
-
                     else:
                         aluno_banco.ira = linha["ira"]
                         aluno_banco.formado = (linha["formado"] == "SIM")
@@ -106,7 +122,7 @@ class SyncDeysiDataUseCases:
                                     existe_historico.qtd_reprovado = qtd_reprovacoes
                 
             self.db.commit()
-            return {"mensagem": "Sincronização dos dados DEYSI concluída com sucesso!"}
+            return {"mensagem": "Sincronização dos dados concluída com sucesso!"}
                             
         except Exception as e:
             self.db.rollback()
