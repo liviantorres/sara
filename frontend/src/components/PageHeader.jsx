@@ -1,42 +1,47 @@
 import React from "react";
+import KPICard from "./KPICard";
 
 export default function PageHeader({ tag, title, description, stats }) {
     return (
-        <div className="mb-8">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-                <div>
+        <div className="mb-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
                     {tag && (
-                        <span className="text-[#005386] font-bold text-[11px] uppercase tracking-widest mb-2 block">
+                        <p className="mb-2 text-xs font-medium text-gray-500">
                             {tag}
-                        </span>
+                        </p>
                     )}
-                    
-                    <h1 className="text-4xl font-bold text-gray-900 font-figtree">
+
+                    <h1 className="font-figtree text-[30px] font-semibold leading-tight tracking-tight text-gray-900">
                         {title}
                     </h1>
-                    
+
                     {description && (
-                        <p className="text-gray-500 mt-2 text-sm max-w-xl font-figtree">
+                        <p className="mt-2 max-w-2xl font-figtree text-sm leading-6 text-gray-500">
                             {description}
                         </p>
                     )}
                 </div>
 
                 {stats && stats.length > 0 && (
-                    <div className="flex gap-4 w-full lg:w-auto">
+                    <div className="grid w-full grid-cols-2 gap-3 lg:w-auto lg:flex">
                         {stats.map((stat, index) => (
-                            <div key={index} className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm flex-1 lg:min-w-[150px]">
-                                <p className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wider">{stat.label}</p>
-                                <p className={`text-2xl font-bold font-figtree ${stat.color || "text-[#005386]"}`}>
-                                    {stat.value}
-                                </p>
-                            </div>
+                            <KPICard
+                                key={index}
+                                title={stat.label}
+                                value={stat.value}
+                                subtitle={stat.subtitle}
+                                icon={stat.icon}
+                                highlightColorClass={
+                                    stat.color || "text-[#005386]"
+                                }
+                            />
                         ))}
                     </div>
                 )}
             </div>
 
-            <div className="h-0.5 w-full bg-gradient-to-r from-[#005386] via-[#00A3E0] to-transparent rounded-full mt-8 opacity-90"></div>
+            <div className="mt-7 h-px w-full bg-gray-200" />
         </div>
     );
 }

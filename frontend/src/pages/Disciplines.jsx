@@ -9,6 +9,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { exportarRankingDisciplinas } from "../utils/exportUtils";
 import { useCursos } from "../hooks/useCursos";
 import DataTable from "../components/DataTable";
+import ChartContainer from "../components/ChartContainer";
+import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
 
 export default function Disciplines() {
     const [materias, setMaterias] = useState([]);
@@ -123,95 +125,107 @@ export default function Disciplines() {
     return (
         <div className="font-figtree">
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
-                <PageHeader
-                    tag="Mapeamento Acadêmico"
-                    title="Disciplinas Gargalo."
-                    description="Identifique as matérias com maior índice histórico de retenção."
-                />
+            <PageHeader
+                tag="Mapeamento Acadêmico"
+                title="Disciplinas Gargalo."
+                description="Identifique as matérias com maior índice histórico de retenção."
 
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <ExportGroup onExport={gerarRelatorioDisciplinas} />
-                    <CourseFilter
-                        value={filtroCurso}
-                        onChange={setFiltroCurso}
-                        cursos={cursos}
-                        label="Análise por Curso"
-                    />
-                </div>
+            />
+
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4 mb-6 -mt-2">
+                <ExportGroup onExport={gerarRelatorioDisciplinas} />
+                <CourseFilter
+                    value={filtroCurso}
+                    onChange={setFiltroCurso}
+                    cursos={cursos}
+                    label="Análise por Curso"
+                />
             </div>
 
-            {/* KPI CARDS - Usando nosso novo componente limpinho! */}
-            {!carregando && materias.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <KPICard
-                        title="Total de Matérias Críticas"
-                        value={materias.length}
-                        subtitle="Com histórico de reprovação"
-                    />
-                    <KPICard
-                        title="A Pior de Todas (Nº 1)"
-                        value={materias[0]?.nome}
-                        subtitle={`${materias[0]?.reprovacoes} reprovações`}
-                        icon={<AlertTriangle size={12} />}
-                        highlightColor="red-500"
-                    />
-                    <KPICard
-                        title="Impacto Total"
-                        value={totalReprovacoes}
-                        subtitle="Reprovações acumuladas"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {carregando ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : materias.length > 0 ? (
+                    <>
+                        <KPICard
+                            title="Total de Matérias Críticas"
+                            value={materias.length}
+                            subtitle="Com histórico de reprovação"
+                        />
+                        <KPICard
+                            title="A Pior de Todas (Nº 1)"
+                            value={materias[0]?.nome}
+                            subtitle={`${materias[0]?.reprovacoes} reprovações`}
+                            icon={<AlertTriangle size={12} />}
+                            highlightColor="red-500"
+                        />
+                        <KPICard
+                            title="Impacto Total"
+                            value={totalReprovacoes}
+                            subtitle="Reprovações acumuladas"
+                        />
+                    </>
+                ) : null}
+            </div>
+
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+                <div className="lg:col-span-2 flex flex-col">
+                    {carregando ? (
+                        <SkeletonChart />
+                    ) : materias.length > 0 ? (
+                        <ChartContainer
+                            title="Top 10 Matérias Críticas"
+                            subtitle="Disciplinas que mais reprovam na universidade."
+                            height={250}
+                        >
+                            <BarChart data={dadosGraficoBarras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="codigo" tick={{ fontSize: 10, fill: '#64748b' }} tickMargin={10} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#f8fafc' }} />
+                                <Bar dataKey="reprovacoes" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={45} />
+                            </BarChart>
+                        </ChartContainer>
+                    ) : null}
                 </div>
-            )}
 
-            {/* AREA DE GRÁFICOS */}
-            {!carregando && materias.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-
-                    {/* Gráfico de Barras - Ocupa 2 colunas */}
-                    <div className="bg-white p-5 border border-gray-200 rounded-xl shadow-sm lg:col-span-2">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">Top 10 Matérias Críticas</h3>
-                        <div className="h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={dadosGraficoBarras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="codigo" tick={{ fontSize: 10, fill: '#64748b' }} tickMargin={10} axisLine={false} tickLine={false} />
-                                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                    <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#f8fafc' }} />
-                                    <Bar dataKey="reprovacoes" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={45} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Gráfico de Concentração - Ocupa 1 coluna */}
-                    <div className="bg-white p-5 border border-gray-200 rounded-xl shadow-sm flex flex-col">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4 text-center">Concentração (Top 5 vs Resto)</h3>
-                        <div className="flex-1 h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={dadosGraficoPizza}
-                                        cx="50%"
-                                        cy="45%"
-                                        innerRadius={60}
-                                        outerRadius={85}
-                                        paddingAngle={3}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {dadosGraficoPizza.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={CORES_PIZZA[index % CORES_PIZZA.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip formatter={(value) => [`${value} reprovações`, 'Total']} />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
+                <div className="flex flex-col">
+                    {carregando ? (
+                        <SkeletonChart />
+                    ) : materias.length > 0 ? (
+                        <ChartContainer
+                            title="Concentração"
+                            subtitle="Top 5 vs Resto"
+                            height={250}
+                        >
+                            <PieChart>
+                                <Pie
+                                    data={dadosGraficoPizza}
+                                    cx="50%"
+                                    cy="45%"
+                                    innerRadius={60}
+                                    outerRadius={85}
+                                    paddingAngle={3}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    {dadosGraficoPizza.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={CORES_PIZZA[index % CORES_PIZZA.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => [`${value} reprovações`, 'Total']} />
+                                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                            </PieChart>
+                        </ChartContainer>
+                    ) : null}
                 </div>
-            )}
+            </div>
 
             <DataTable
                 columns={colunasTabela}

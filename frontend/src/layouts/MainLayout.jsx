@@ -11,11 +11,10 @@ export default function MainLayout() {
 
   const pageTitles = {
     "/inicial": "Página Inicial",
-    "/alunos": "Gerenciar Alunos",
+    "/alunos": "Alunos",
     "/estudantes": "Estudantes",
-    "/relatorios": "Relatórios",
-    "/importacao-de-dados": "Importação de Dados",
-    "/analises": "Análises Dashboard",
+    "/disciplinas": "Disciplinas",
+    "/importacao": "Importação de Dados",
   };
 
   const currentTitle = pageTitles[location.pathname] || "SARA - Sistema";

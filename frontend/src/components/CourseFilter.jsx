@@ -1,19 +1,28 @@
 import React from "react";
 
-export default function CourseFilter({ value, onChange, cursos, label = "Filtrar Curso" }) {
+export default function CourseFilter({
+    value,
+    onChange,
+    cursos,
+    label = "Curso",
+}) {
     return (
-        <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-[42px]">
-            <div className="px-4 bg-gray-50 border-r border-gray-200 text-[#005386] font-bold text-[11px] uppercase tracking-widest flex items-center">
+        <div className="flex h-9 items-center">
+            <label className="mr-2 text-sm text-gray-500">
                 {label}
-            </div>
+            </label>
+
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="bg-white px-3 text-sm text-gray-800 focus:outline-none cursor-pointer font-semibold min-w-[200px]"
+                className="h-9 min-w-[200px] rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none cursor-pointer transition-colors hover:border-gray-300 focus:border-gray-400"
             >
-                <option value="">Visão Geral (Todos)</option>
-                {cursos && cursos.map(curso => (
-                    <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                <option value="">Todos os cursos</option>
+
+                {cursos?.map((curso) => (
+                    <option key={curso.id} value={curso.id}>
+                        {curso.nome}
+                    </option>
                 ))}
             </select>
         </div>

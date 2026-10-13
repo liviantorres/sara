@@ -1,88 +1,194 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 
-export default function StudentFilters({ filtros, setFiltros, cursos, onSearch, onClear }) {
+export default function StudentFilters({
+    filtros,
+    setFiltros,
+    cursos,
+    onSearch,
+    onClear,
+}) {
     const { matricula, situacao, ira, semestre, curso } = filtros;
-    const temFiltroAtivo = matricula || situacao || ira || semestre || curso;
+
+    const temFiltroAtivo =
+        matricula || situacao || ira || semestre || curso;
 
     const handleChange = (campo, valor) => {
-        setFiltros(prev => ({ ...prev, [campo]: valor }));
+        setFiltros((prev) => ({
+            ...prev,
+            [campo]: valor,
+        }));
     };
 
+    const labelClass =
+        "mb-1.5 block text-xs font-semibold text-gray-500";
+
+    const inputClass =
+        "w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-[#005386] focus:ring-1 focus:ring-[#005386]";
+
     return (
-        <div className="bg-white rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end shadow-sm shadow-blue-900/5 border border-gray-100">
-            <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Matrícula</label>
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Buscar matrícula..."
-                        value={matricula}
-                        onChange={(e) => handleChange('matricula', e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter'}
-                        className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 pl-4 pr-10 text-gray-700 focus:bg-white focus:border-[#005386] focus:ring-4 focus:ring-blue-50 transition-all outline-none"
+        <section className="mb-6 rounded-md border border-gray-200 bg-white">
+            <div className="border-b border-gray-100 px-6 py-4">
+                <div className="flex items-center gap-2">
+                    <SlidersHorizontal
+                        size={17}
+                        className="text-[#005386]"
                     />
-                    <button onClick={onSearch} className="absolute right-3 top-2.5 text-gray-400 hover:text-[#005386]">
-                        <Search size={20} />
-                    </button>
+
+                    <div>
+                        <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                            Filtros
+                        </h2>
+
+                        <p className="mt-0.5 text-sm text-gray-500">
+                            Consulte os alunos por matrícula, curso ou situação.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div className="w-44">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Situação</label>
-                <select
-                    value={situacao}
-                    onChange={(e) => { handleChange('situacao', e.target.value);}}
-                    className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] transition-all outline-none cursor-pointer"
-                >
-                    <option value="">Todas as situações</option>
-                    <option value="false">Cursando</option>
-                    <option value="true">Formado</option>
-                </select>
-            </div>
+            <div className="p-6">
+                <div className="flex flex-wrap items-end gap-4">
+                    {/* MATRÍCULA */}
+                    <div className="min-w-[220px] flex-1">
+                        <label className={labelClass}>
+                            Matrícula
+                        </label>
 
-            <div className="w-56">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Curso</label>
-                <select
-                    value={curso}
-                    onChange={(e) => { handleChange('curso', e.target.value);}}
-                    className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] transition-all outline-none cursor-pointer"
-                >
-                    <option value="">Todos os Cursos</option>
-                    {cursos.map(c => (
-                        <option key={c.id} value={c.id}>{c.nome}</option>
-                    ))}
-                </select>
-            </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Buscar por matrícula"
+                                value={matricula}
+                                onChange={(e) =>
+                                    handleChange(
+                                        "matricula",
+                                        e.target.value
+                                    )
+                                }
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && onSearch()
+                                }
+                                className={`${inputClass} pr-10`}
+                            />
 
-            <div className="w-32">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">IRA Máx.</label>
-                <input
-                    type="number" step="0.1" placeholder="Ex: 7.0"
-                    value={ira}
-                    onChange={(e) => { handleChange('ira', e.target.value);}}
-                    className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] transition-all outline-none"
-                />
-            </div>
+                            <button
+                                type="button"
+                                onClick={onSearch}
+                                className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-gray-400 transition-colors hover:text-[#005386]"
+                                aria-label="Pesquisar"
+                            >
+                                <Search size={17} />
+                            </button>
+                        </div>
+                    </div>
 
-            <div className="w-32">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Semestre</label>
-                <input
-                    type="number" placeholder="Ex: 5"
-                    value={semestre}
-                    onChange={(e) => { handleChange('semestre', e.target.value);}}
-                    className="w-full bg-slate-50 border border-transparent rounded-lg py-2.5 px-4 text-gray-700 focus:bg-white focus:border-[#005386] transition-all outline-none"
-                />
+                    {/* SITUAÇÃO */}
+                    <div className="w-44">
+                        <label className={labelClass}>
+                            Situação
+                        </label>
+
+                        <select
+                            value={situacao}
+                            onChange={(e) =>
+                                handleChange(
+                                    "situacao",
+                                    e.target.value
+                                )
+                            }
+                            className={`${inputClass} cursor-pointer`}
+                        >
+                            <option value="">Todas</option>
+                            <option value="false">Cursando</option>
+                            <option value="true">Formado</option>
+                        </select>
+                    </div>
+
+                    {/* CURSO */}
+                    <div className="w-56">
+                        <label className={labelClass}>
+                            Curso
+                        </label>
+
+                        <select
+                            value={curso}
+                            onChange={(e) =>
+                                handleChange(
+                                    "curso",
+                                    e.target.value
+                                )
+                            }
+                            className={`${inputClass} cursor-pointer`}
+                        >
+                            <option value="">Todos os cursos</option>
+
+                            {cursos.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.nome}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* IRA */}
+                    <div className="w-32">
+                        <label className={labelClass}>
+                            IRA máx.
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.1"
+                            placeholder="Ex.: 7.0"
+                            value={ira}
+                            onChange={(e) =>
+                                handleChange(
+                                    "ira",
+                                    e.target.value
+                                )
+                            }
+                            className={inputClass}
+                        />
+                    </div>
+
+                    {/* SEMESTRE */}
+                    <div className="w-32">
+                        <label className={labelClass}>
+                            Semestre
+                        </label>
+
+                        <input
+                            type="number"
+                            placeholder="Ex.: 5"
+                            value={semestre}
+                            onChange={(e) =>
+                                handleChange(
+                                    "semestre",
+                                    e.target.value
+                                )
+                            }
+                            className={inputClass}
+                        />
+                    </div>
+                </div>
             </div>
 
             {temFiltroAtivo && (
-                <button
-                    onClick={onClear}
-                    className="px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                    Limpar
-                </button>
+                <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
+                    <span className="text-xs text-gray-500">
+                        Filtros aplicados
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={onClear}
+                        className="cursor-pointer text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+                    >
+                        Limpar filtros
+                    </button>
+                </div>
             )}
-        </div>
+        </section>
     );
 }

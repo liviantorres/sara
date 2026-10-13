@@ -2,7 +2,8 @@ from sqlalchemy.orm import Session
 from app.infrastructure.db.models import AlunoModel, CursoModel
 from app.infrastructure.db.models.historico_disciplina_model import HistoricoDisciplinaModel
 from app.infrastructure.db.models.disciplina_model import DisciplinaModel
-from sqlalchemy import func, or_, case, desc
+from sqlalchemy import func, or_, case, desc, cast, String
+
 
 class AlunoRepository:
     def __init__(self, db: Session):
@@ -16,7 +17,7 @@ class AlunoRepository:
             busca = busca.filter(AlunoModel.curso_id == curso_id)
 
         if matricula is not None:
-            busca = busca.filter(AlunoModel.matricula == matricula)
+            busca = busca.filter(cast(AlunoModel.matricula, String).ilike(f"%{matricula}%"))
 
         if formado is not None:
             busca = busca.filter(AlunoModel.formado == formado)
@@ -37,7 +38,7 @@ class AlunoRepository:
         if curso_id is not None:
                     busca = busca.filter(AlunoModel.curso_id == curso_id)   
         if matricula is not None:
-            busca = busca.filter(AlunoModel.matricula == matricula)
+            busca = busca.filter(cast(AlunoModel.matricula, String).ilike(f"%{matricula}%"))
         if formado is not None:
             busca = busca.filter(AlunoModel.formado == formado)
         if ira_max is not None:
@@ -61,8 +62,12 @@ class AlunoRepository:
          
         q_todos = self.db.query(AlunoModel)
 
+        q_cursando = self.db.query(AlunoModel).filter(
+            AlunoModel.formado.is_(False)
+        )
+
         q_retidos = self.db.query(AlunoModel).filter(
-            AlunoModel.formado == False, 
+            AlunoModel.formado.is_(False),
             AlunoModel.semestre_atual > tempo_ideal
         )
 
@@ -84,8 +89,18 @@ class AlunoRepository:
         dados_materias = []
 
         if curso_id is not None:
-            q_todos = q_todos.filter(AlunoModel.curso_id == curso_id)
-            q_retidos = q_retidos.filter(AlunoModel.curso_id == curso_id)
+            q_todos = q_todos.filter(
+                AlunoModel.curso_id == curso_id
+            )
+
+            q_cursando = q_cursando.filter(
+                AlunoModel.curso_id == curso_id
+            )
+
+            q_retidos = q_retidos.filter(
+                AlunoModel.curso_id == curso_id
+            )
+
             q_graf_todos = q_graf_todos.filter(AlunoModel.curso_id == curso_id)
             q_graf_retidos = q_graf_retidos.filter(AlunoModel.curso_id == curso_id)
 
@@ -117,6 +132,7 @@ class AlunoRepository:
                 })
 
         total_alunos = q_todos.count()
+        total_cursando = q_cursando.count()
         total_retidos = q_retidos.count()
 
         total_ano_bd = q_graf_todos.group_by(AlunoModel.ano_ingresso).all()
@@ -153,6 +169,7 @@ class AlunoRepository:
         return {
             "total_alunos": total_alunos,
             "total_retidos": total_retidos,
+            "total_cursando": total_cursando,
             "grafico": dados_graficos,
             "grafico_semestres": dados_semestres,
             "grafico_cursos": dados_cursos,

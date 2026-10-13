@@ -15,11 +15,11 @@ class SyncDeysiDataUseCases:
 
     def executar(self, arquivos: List[UploadFile]):
         info_cursos = {
-            "cc.csv": {"sigla": "CC", "nome": "Ciência da Computação"},
-            "ea.csv": {"sigla": "EA", "nome": "Engenharia Ambiental e Sanitária"},
-            "ec.csv": {"sigla": "EC", "nome": "Engenharia Civil"},
-            "em.csv": {"sigla": "EM", "nome": "Engenharia de Minas"},
-            "si.csv": {"sigla": "SI", "nome": "Sistemas de Informação"}
+            "cc.csv": {"sigla": "CC", "nome": "Ciência da Computação", "carga_horaria": 3280},
+            "ea.csv": {"sigla": "EA", "nome": "Engenharia Ambiental e Sanitária", "carga_horaria": 4032},
+            "ec.csv": {"sigla": "EC", "nome": "Engenharia Civil", "carga_horaria": 3909},
+            "em.csv": {"sigla": "EM", "nome": "Engenharia de Minas", "carga_horaria": 4045},
+            "si.csv": {"sigla": "SI", "nome": "Sistemas de Informação", "carga_horaria": 3236}
         }
 
         arquivos_cursos = [f for f in arquivos if f.filename in info_cursos.keys()]
@@ -49,7 +49,11 @@ class SyncDeysiDataUseCases:
 
                 existe_curso = self.db.query(CursoModel).filter_by(sigla=info_cursos[arquivo.filename]["sigla"]).first()
                 if not existe_curso:
-                    novo_curso = CursoModel(sigla=info_cursos[arquivo.filename]["sigla"], nome=info_cursos[arquivo.filename]["nome"])
+                    novo_curso = CursoModel(
+                        sigla=info_cursos[arquivo.filename]["sigla"], 
+                        nome=info_cursos[arquivo.filename]["nome"],
+                        carga_horaria=info_cursos[arquivo.filename].get("carga_horaria", 3000)
+                    )
                     self.db.add(novo_curso)
                     self.db.flush()
 

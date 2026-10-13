@@ -3,17 +3,30 @@ import { Download } from "lucide-react";
 
 export default function ExportGroup({ onExport }) {
     return (
-        <div className="flex bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-[42px]">
-            <div className="px-4 bg-gray-50 border-r border-gray-200 text-[#005386] font-bold text-[11px] uppercase tracking-widest flex items-center gap-2">
-                <Download size={16} /> Relatório
+        <div className="flex h-9 items-center rounded-md border border-gray-200 bg-white overflow-hidden">
+            <div className="flex items-center gap-2 px-3 text-sm font-medium text-gray-600 border-r border-gray-200">
+                <Download size={15} className="text-gray-400" />
+                <span>Exportar</span>
             </div>
-            <button onClick={() => onExport('csv')} className="px-4 hover:bg-gray-100 text-gray-600 font-semibold text-sm transition-colors border-r border-gray-200 cursor-pointer flex items-center">
+
+            <button
+                onClick={() => onExport("csv")}
+                className="h-full px-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+            >
                 CSV
             </button>
-            <button onClick={() => onExport('excel')} className="px-4 hover:bg-gray-100 text-green-700 font-semibold text-sm transition-colors border-r border-gray-200 cursor-pointer flex items-center">
+
+            <button
+                onClick={() => onExport("excel")}
+                className="h-full px-3 text-sm text-gray-600 border-l border-gray-100 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+            >
                 Excel
             </button>
-            <button onClick={() => onExport('pdf')} className="px-4 hover:bg-gray-100 text-red-600 font-semibold text-sm transition-colors cursor-pointer flex items-center">
+
+            <button
+                onClick={() => onExport("pdf")}
+                className="h-full px-3 text-sm text-gray-600 border-l border-gray-100 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+            >
                 PDF
             </button>
         </div>
