@@ -8,3 +8,10 @@ class ListarDisciplinasUseCases:
         disciplinas = self.repository.listar_todos(pular, limite)
 
         return disciplinas
+
+class ObterRankingDisciplinasUseCase:
+    def __init__(self, repository):
+        self.repository = repository
+
+    def executar(self, curso_id: int = None, limite: int = 50):
+        return self.repository.obter_ranking(curso_id=curso_id, limite=limite)

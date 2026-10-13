@@ -8,3 +8,4 @@ class CursoModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     sigla = Column(String(20), nullable=False)
     nome = Column(String(100), nullable=False)
+    carga_horaria = Column(Integer, nullable=True, default=3000)

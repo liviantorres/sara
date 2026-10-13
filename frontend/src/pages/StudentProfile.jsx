@@ -1,262 +1,682 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
+import {
+    ArrowLeft,
+    AlertTriangle,
+    AlertCircle,
+    Clock,
+    CheckCircle2,
+    BookOpen,
+    Activity,
+    GraduationCap,
+    MapPin,
+} from "lucide-react";
+import {
+    PieChart,
+    Pie,
+    Cell,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+} from "recharts";
+
 import { api } from "../services/api";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import PageHeader from "../components/PageHeader";
+import KPICard from "../components/KPICard";
+import ChartContainer from "../components/ChartContainer";
+import DataTable from "../components/DataTable";
+import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
+import { useCursos } from "../hooks/useCursos";
+
+const CORES = {
+    azul: "#005386",
+    vermelho: "#C2413B",
+    verde: "#2F7D5A",
+    cinza: "#9CA3AF",
+    texto: "#4B5563",
+    borda: "#E5E7EB",
+};
+
+const tooltipStyle = {
+    backgroundColor: "#fff",
+    border: `1px solid ${CORES.borda}`,
+    borderRadius: "6px",
+    padding: "8px 10px",
+    fontSize: "12px",
+};
 
 export default function StudentProfile() {
     const { matricula } = useParams();
     const navigate = useNavigate();
-
+    const { cursos } = useCursos();
     const [aluno, setAluno] = useState(null);
     const [historico, setHistorico] = useState([]);
     const [carregando, setCarregando] = useState(true);
 
     useEffect(() => {
-        const buscarDossie = async () => {
-            try {
-                const respAluno = await api.get(`/api/alunos?matricula=${matricula}`);
-                if (respAluno.data.length > 0) setAluno(respAluno.data[0]);
+        let ativo = true;
 
-                const respHist = await api.get(`/api/historicos?aluno_matricula=${matricula}`);
-                setHistorico(respHist.data);
+        const buscarDossie = async () => {
+            setCarregando(true);
+            setAluno(null);
+            setHistorico([]);
+
+            try {
+                const [respAluno, respHist] = await Promise.all([
+                    api.get("/api/alunos", {
+                        params: { matricula },
+                    }),
+                    api.get("/api/historicos", {
+                        params: { aluno_matricula: matricula },
+                    }),
+                ]);
+
+                if (!ativo) return;
+
+                const alunos = Array.isArray(respAluno.data)
+                    ? respAluno.data
+                    : [];
+
+                const alunoEncontrado = alunos.find(
+                    (item) =>
+                        String(item.matricula) === String(matricula)
+                );
+
+                setAluno(alunoEncontrado || null);
+
+                setHistorico(
+                    Array.isArray(respHist.data)
+                        ? respHist.data
+                        : []
+                );
             } catch (error) {
-                console.error("Erro ao carregar dossiê:", error);
+                console.error(
+                    "Erro ao carregar perfil acadêmico:",
+                    error
+                );
             } finally {
-                setCarregando(false);
+                if (ativo) {
+                    setCarregando(false);
+                }
             }
         };
+
         buscarDossie();
+
+        return () => {
+            ativo = false;
+        };
     }, [matricula]);
 
     if (carregando) {
         return (
-            <Layout>
-                <div className="flex justify-center items-center h-full min-h-screen bg-slate-50">
-                    <p className="text-[#005386] font-bold animate-pulse text-xl">Analisando Dossiê do Aluno...</p>
+            <div className="font-figtree">
+                <div className="mb-6 h-8 w-48 animate-pulse rounded-md bg-gray-200" />
+
+                <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                        <SkeletonCard key={index} />
+                    ))}
                 </div>
-            </Layout>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <SkeletonChart />
+                    <SkeletonChart />
+                </div>
+            </div>
         );
     }
 
     if (!aluno) {
         return (
-            <Layout>
-                <div className="p-8 text-center text-gray-500 font-figtree">Nenhum aluno encontrado.</div>
-            </Layout>
+            <div className="font-figtree">
+                <button
+                    type="button"
+                    onClick={() => navigate("/alunos")}
+                    className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+                >
+                    <ArrowLeft size={16} />
+                    Voltar para alunos
+                </button>
+
+                <div className="rounded-md border border-gray-200 bg-white px-6 py-14 text-center">
+                    <AlertCircle
+                        size={30}
+                        className="mx-auto mb-3 text-gray-400"
+                    />
+
+                    <h2 className="text-lg font-semibold text-gray-900">
+                        Aluno não encontrado
+                    </h2>
+
+                    <p className="mt-2 text-sm text-gray-500">
+                        Não foi encontrado um aluno com a matrícula{" "}
+                        {matricula}.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate("/alunos")}
+                        className="mt-5 cursor-pointer rounded-md bg-[#005386] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#004a78]"
+                    >
+                        Voltar para a lista
+                    </button>
+                </div>
+            </div>
         );
     }
 
-    const CARGA_HORARIA_CURSOS = {
-        1: 3200, 
-        2: 3600, 
-    };
+    // Indicadores acadêmicos
+    const cursoDoAluno = cursos.find(
+        (c) => String(c.id) === String(aluno.curso_id)
+    );
 
-    const metaHoras = CARGA_HORARIA_CURSOS[aluno.curso_id] || 3000; 
-    const horasFaltantes = Math.max(0, metaHoras - aluno.ch_total);
-    const porcentagemConclusao = Math.min(100, Math.round((aluno.ch_total / metaHoras) * 100));
+    const metaHoras = Number(cursoDoAluno?.carga_horaria) || 3000;
+    const cargaHorariaTotal = Number(aluno.ch_total) || 0;
 
-    const aprovadas = historico.filter(h => h.status_conclusao).length;
-    const pendentes = historico.filter(h => !h.status_conclusao).length;
+
+    const horasFaltantes = Math.max(
+        0,
+        metaHoras - cargaHorariaTotal
+    );
+
+    const porcentagemConclusao = Math.min(
+        100,
+        Math.max(
+            0,
+            Math.round(
+                (cargaHorariaTotal / metaHoras) * 100
+            )
+        )
+    );
+
+    const ira = Number(aluno.ira) || 0;
+    const mediaNotas = Number(aluno.media_notas) || 0;
+    const varianciaNotas =
+        Number(aluno.variancia_notas) || 0;
+
+    const totalReprovacoes =
+        Number(aluno.total_reprovacoes) || 0;
+
+    const totalTrancamentos =
+        Number(aluno.qtd_trancamentos) || 0;
+
+    const aprovadas = historico.filter(
+        (item) => item.status_conclusao
+    ).length;
+
+    const naoConcluidas = historico.filter(
+        (item) => !item.status_conclusao
+    ).length;
+
     const dadosPizza = [
-        { name: "Aprovadas", value: aprovadas, color: "#005386" }, 
-        { name: "Reprovadas/Pendentes", value: pendentes, color: "#CBD5E1" } 
+        {
+            name: "Aprovadas",
+            value: aprovadas,
+            color: CORES.azul,
+        },
+        {
+            name: "Não concluídas",
+            value: naoConcluidas,
+            color: CORES.cinza,
+        },
     ];
 
-    const limiteSemestres = [2, 4, 5].includes(aluno.curso_id) ? 10 : 8;
-        
-    const isRetido = !aluno.formado && (aluno.semestre_atual > limiteSemestres);
-    
-    let statusAcademico = "Fluxo Regular";
-    let corStatus = "text-[#005386]"; 
+    const totalDisciplinas = historico.length;
+
+    const limiteSemestres = [2, 4, 5].includes(
+        Number(aluno.curso_id)
+    )
+        ? 10
+        : 8;
+
+    const isRetido =
+        !aluno.formado &&
+        Number(aluno.semestre_atual) > limiteSemestres;
+
+    let statusAcademico = "Fluxo regular";
+    let corStatus = "text-[#005386]";
 
     if (aluno.formado) {
         statusAcademico = "Formado";
-        corStatus = "text-green-600";
+        corStatus = "text-[#2F7D5A]";
     } else if (isRetido) {
-        statusAcademico = "Retido (Risco)";
-        corStatus = "text-red-600";
+        statusAcademico = "Retido";
+        corStatus = "text-[#C2413B]";
     }
 
     const materiasCriticas = [...historico]
-        .filter(h => h.qtd_reprovado > 0)
-        .sort((a, b) => b.qtd_reprovado - a.qtd_reprovado)
+        .filter(
+            (item) => Number(item.qtd_reprovado) > 0
+        )
+        .sort(
+            (a, b) =>
+                Number(b.qtd_reprovado) -
+                Number(a.qtd_reprovado)
+        )
         .slice(0, 5)
-        .map(h => ({ name: h.disciplina_codigo, reprovacoes: h.qtd_reprovado }));
+        .map((item) => ({
+            name: item.disciplina_codigo,
+            reprovacoes: Number(item.qtd_reprovado),
+        }));
+
+    // Indicadores exibidos nos KPICards
+    const indicadores = [
+        {
+            title: "Reprovações",
+            value: totalReprovacoes,
+            subtitle: "Total registrado",
+            icon: <AlertCircle size={17} />,
+            highlightColorClass: "text-[#C2413B]",
+        },
+        {
+            title: "Trancamentos",
+            value: totalTrancamentos,
+            subtitle: "Registrados",
+            icon: <Clock size={17} />,
+        },
+        {
+            title: "Média geral",
+            value: mediaNotas.toFixed(2),
+            subtitle: "Média das notas",
+            icon: <GraduationCap size={17} />,
+        },
+        {
+            title: "CH concluída",
+            value: `${cargaHorariaTotal}h`,
+            subtitle: `Meta: ${metaHoras}h`,
+            icon: <CheckCircle2 size={17} />,
+        },
+        {
+            title: "CH restante",
+            value: `${horasFaltantes}h`,
+            subtitle: `${porcentagemConclusao}% concluído`,
+            icon: <BookOpen size={17} />,
+            highlightColorClass:
+                horasFaltantes > 0
+                    ? "text-[#005386]"
+                    : "text-[#2F7D5A]",
+        },
+        {
+            title: "Variação das notas",
+            value: `±${varianciaNotas.toFixed(1)}`,
+            subtitle: "Variância registrada",
+            icon: <Activity size={17} />,
+        },
+    ];
+
+    // Configuração da tabela de histórico
+    // Configuração da tabela de histórico com Nome + Código
+    const colunasHistorico = [
+        {
+            header: "Disciplina",
+            render: (row) => (
+                <div className="py-0.5">
+                    <span className="font-semibold text-gray-900 block leading-snug">
+                        {row.disciplina_nome || "Nome não cadastrado"}
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono tracking-wide">
+                        {row.disciplina_codigo}
+                    </span>
+                </div>
+            )
+        },
+        {
+            header: "Situação",
+            render: (row) => (
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${row.status_conclusao
+                    ? "bg-green-100 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-600 border border-red-200"
+                    }`}>
+                    {row.status_conclusao ? "Aprovado" : "Pendente / Reprovado"}
+                </span>
+            )
+        },
+        {
+            header: "Tentativas Falhas",
+            headerClassName: "text-center",
+            cellClassName: "text-center",
+            render: (row) => (
+                <span className={`inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-xs font-bold ${row.qtd_reprovado > 0 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-500"
+                    }`}>
+                    {row.qtd_reprovado}
+                </span>
+            )
+        },
+        {
+            header: "Reprovações",
+            headerClassName: "text-center",
+            cellClassName: "text-center",
+            render: (row) => {
+                const quantidade =
+                    Number(row.qtd_reprovado) || 0;
+
+                return (
+                    <span
+                        className={`inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-xs font-medium ${quantidade > 0
+                            ? "bg-red-50 text-[#C2413B]"
+                            : "bg-gray-50 text-gray-500"
+                            }`}
+                    >
+                        {quantidade}
+                    </span>
+                );
+            },
+        },
+    ];
 
     return (
-        <>
-            <div className="p-8 font-figtree bg-slate-50 min-h-screen">
-                <button
-                    onClick={() => navigate("/alunos")}
-                    className="cursor-pointer mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-[#005386] font-bold uppercase tracking-widest transition-colors"
-                >
-                    &larr; Voltar para a lista
-                </button>
+        <div className="font-figtree">
+            {/* Navegação */}
+            <button
+                type="button"
+                onClick={() => navigate("/alunos")}
+                className="mb-5 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+            >
+                <ArrowLeft size={16} />
+                Voltar para alunos
+            </button>
 
-                <PageHeader
-                    
-                    tag="Dossiê Acadêmico"
-                    title={`Aluno: ${aluno.matricula}`}
-                    description={`Ingresso em ${aluno.ano_ingresso}. Prazo máximo para conclusão: ${aluno.prazo_conclusao}.`}
-                                       stats={[
-                        { label: "Semestre", value: `${aluno.semestre_atual}º` },
-                        { label: "IRA", value: aluno.ira, color: aluno.ira < 5 ? "text-red-500" : "text-[#005386]" },
-                        { label: "Residência", value: aluno.municipio_reside || "N/A" }, 
-                        { label: "Status Geral", value: statusAcademico, color: corStatus } 
-                    ]}
-                />
 
-                {isRetido && (
-                    <div className="mb-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-red-100 p-2 rounded-full">
-                                <span className="text-xl" role="img" aria-label="alerta">⚠️</span>
-                            </div>
-                            <div>
-                                <h4 className="text-red-800 font-bold text-sm tracking-wide uppercase">Alerta de Retenção Detectada</h4>
-                                <p className="text-red-600 text-sm mt-0.5 font-medium">
-                                    Este aluno apresenta múltiplos fatores de risco ({aluno.total_reprovacoes} reprovações acumuladas e IRA de {aluno.ira}) e encontra-se retido fora do fluxo ideal.
-                                </p>
-                            </div>
-                        </div>
-                       {/**  
-                        <button className="px-4 py-2 bg-white text-red-700 border border-red-200 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors shadow-sm">
-                            Notificar Coordenação
-                        </button>
-                        */}
-                    </div>
-                )}
-                
-                <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Total Reprovações</p>
-                        <p className="text-3xl font-black text-gray-900 mt-1">{aluno.total_reprovacoes}</p>
-                    </div>
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Trancamentos</p>
-                        <p className="text-3xl font-black text-gray-900 mt-1">{aluno.qtd_trancamentos}</p>
-                    </div>
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Média de Notas</p>
-                        <p className="text-3xl font-black text-gray-900 mt-1">{Number(aluno.media_notas).toFixed(2)}</p>
-                    </div>
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">CH Concluída</p>
-                        <p className="text-3xl font-black text-[#005386] mt-1">{aluno.ch_total}h</p>
-                    </div>
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">CH Faltante</p>
-                        <p className="text-3xl font-black text-orange-500 mt-1">{horasFaltantes}h</p>
-                    </div>
-                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-sm md:col-span-2">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Média & Consistência</p>
-                        <div className="flex items-end gap-3 mt-1">
-                            <p className="text-3xl font-black text-gray-900">{Number(aluno.media_notas).toFixed(2)}</p>
-                            <p className="text-sm font-medium text-gray-400 mb-1 pb-0.5" title="Variância das notas">
-                                ± {Number(aluno.variancia_notas).toFixed(1)} <span className="text-[10px] uppercase">var</span>
-                            </p>
-                        </div>
-                    </div>
+            <PageHeader
+                tag="Dossiê Acadêmico"
+                title={`Matrícula: ${aluno.matricula}`}
+                description={
+                    <span className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 font-semibold text-[#005386] bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 text-xs">
+                            <GraduationCap size={14} />
+                            {cursoDoAluno ? `${cursoDoAluno.nome} (${cursoDoAluno.sigla})` : "Curso não informado"}
+                        </span>
 
-                </div>
-                <div className="bg-white p-4 mb-8 border border-gray-200 rounded-xl shadow-sm md:col-span-2 flex flex-col justify-center">
-                    <div className="flex justify-between items-end mb-2">
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Progresso do Curso</p>
-                        <p className="text-sm font-bold text-[#005386]">{porcentagemConclusao}%</p>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2.5">
-                        <div
-                            className="bg-[#005386] h-2.5 rounded-full transition-all duration-1000"
-                            style={{ width: `${porcentagemConclusao}%` }}
-                        ></div>
+                        <span className="inline-flex items-center gap-1 text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200 text-xs font-medium">
+                            <MapPin size={13} className="text-gray-500" />
+                            {aluno.municipio_reside || "Município N/A"}
+                            {aluno.cidade_nasceu && aluno.cidade_nasceu !== aluno.municipio_reside ? ` (Nat. ${aluno.cidade_nasceu})` : ""}
+                        </span>
+
+                        <span className="text-xs text-gray-500 ml-1">
+                            • Ingresso: <strong>{aluno.ano_ingresso || "N/A"}</strong> • Prazo para a conclusão: <strong>{aluno.prazo_conclusao || "N/A"}</strong>
+                        </span>
+                    </span>
+                }
+                stats={[
+                    {
+                        label: "Semestre",
+                        value: `${aluno.semestre_atual}º`,
+                    },
+                    {
+                        label: "IRA",
+                        value: ira.toFixed(2),
+                        color: ira < 7 ? "text-[#C2413B]" : "text-[#2F7D5A]",
+                    },
+                    {
+                        label: "Situação",
+                        value: statusAcademico,
+                        color: corStatus,
+                    },
+                ]}
+            />
+
+            {/* Alerta de retenção */}
+            {isRetido && (
+                <div className="mb-6 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4">
+                    <AlertTriangle
+                        size={19}
+                        className="mt-0.5 shrink-0 text-[#C2413B]"
+                    />
+
+                    <div>
+                        <h3 className="text-sm font-semibold text-[#C2413B]">
+                            Aluno em situação de retenção
+                        </h3>
+
+                        <p className="mt-1 text-sm leading-6 text-gray-700">
+                            O aluno ultrapassou o período
+                            regular previsto para conclusão
+                            do curso. Seu histórico registra{" "}
+                            <span className="font-medium">
+                                {totalReprovacoes} reprovações
+                            </span>{" "}
+                            e IRA de{" "}
+                            <span className="font-medium">
+                                {ira.toFixed(2)}
+                            </span>
+                            .
+                        </p>
                     </div>
                 </div>
+            )}
 
-        
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-
-                    <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6">Eficiência nas Matérias</h3>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={dadosPizza} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
-                                        {dadosPizza.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <div className="flex justify-center gap-6 mt-2">
-                            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#005386] rounded-full"></div><span className="text-sm font-semibold text-gray-600">Aprovadas</span></div>
-                            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-300 rounded-full"></div><span className="text-sm font-semibold text-gray-600">Pendentes</span></div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6">Matérias Críticas (Reprovações)</h3>
-                        {materiasCriticas.length > 0 ? (
-                            <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={materiasCriticas} layout="vertical" margin={{ left: 20, right: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                                        <XAxis type="number" allowDecimals={false} stroke="#94A3B8" />
-                                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 11, fill: '#475569' }} />
-                                        <Tooltip cursor={{ fill: '#F8FAFC' }} />
-                                        <Bar dataKey="reprovacoes" fill="#00A3E0" radius={[0, 4, 4, 0]} barSize={24} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        ) : (
-                            <div className="h-64 flex items-center justify-center text-gray-400 font-medium">
-                                Nenhuma reprovação registrada.
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-            
-                <div className="mt-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Histórico Completo de Disciplinas</h3>
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm shadow-blue-900/5">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-blue-50/50 text-[#00427A] text-[13px] uppercase tracking-wider border-b border-blue-100/50">
-                                    <th className="px-6 py-4 font-bold">Código da Disciplina</th>
-                                    <th className="px-6 py-4 font-bold">Situação</th>
-                                    <th className="px-6 py-4 font-bold text-center">Tentativas Falhas</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 text-gray-700">
-                                {historico.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="3" className="px-6 py-8 text-center text-gray-500 font-medium">Sem registros de disciplinas.</td>
-                                    </tr>
-                                ) : (
-                                    historico.map((hist, idx) => (
-                                        <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-[#005386]">{hist.disciplina_codigo}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${hist.status_conclusao ? "bg-green-100 text-green-700" : "bg-red-50 text-red-600"
-                                                    }`}>
-                                                    {hist.status_conclusao ? "APROVADO" : "PENDENTE/REPROVADO"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center font-bold text-gray-500">
-                                                {hist.qtd_reprovado}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            {/* Indicadores */}
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                {indicadores.map((indicador) => (
+                    <KPICard
+                        key={indicador.title}
+                        title={indicador.title}
+                        value={indicador.value}
+                        subtitle={indicador.subtitle}
+                        icon={indicador.icon}
+                        highlightColorClass={
+                            indicador.highlightColorClass
+                        }
+                    />
+                ))}
             </div>
-        </>
+
+            {/* Progresso da carga horária */}
+            <section className="mb-8 rounded-md border border-gray-200 bg-white p-6">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                            Progresso da Carga Horária
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                            Acompanhamento da carga horária
+                            cumprida em relação à prevista
+                            para o curso.
+                        </p>
+                    </div>
+
+                    <span className="text-lg font-semibold text-[#005386]">
+                        {porcentagemConclusao}%
+                    </span>
+                </div>
+
+                <div
+                    className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100"
+                    role="progressbar"
+                    aria-label="Carga horária concluída"
+                    aria-valuenow={porcentagemConclusao}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                >
+                    <div
+                        className="h-full rounded-full bg-[#005386] transition-[width] duration-300"
+                        style={{
+                            width: `${porcentagemConclusao}%`,
+                        }}
+                    />
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+                    <span>
+                        {cargaHorariaTotal}h concluídas
+                    </span>
+
+                    <span>
+                        {horasFaltantes}h restantes de{" "}
+                        {metaHoras}h
+                    </span>
+                </div>
+            </section>
+
+            {/* Gráficos */}
+            <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <ChartContainer
+
+                    title="Situação das Disciplinas"
+                    subtitle="Distribuição das disciplinas conforme a situação acadêmica do aluno."
+                    height={280}
+                    emptyState={
+                        totalDisciplinas === 0 ? (
+                            <>
+                                <BookOpen
+                                    size={28}
+                                    className="text-gray-400"
+                                />
+                                <p className="text-sm text-gray-500">
+                                    Nenhuma disciplina registrada.
+                                </p>
+                            </>
+                        ) : null
+                    }
+                >
+                    <PieChart>
+                        <Pie
+                            data={dadosPizza}
+                            cx="50%"
+                            cy="45%"
+                            innerRadius={60}
+                            outerRadius={85}
+                            paddingAngle={3}
+                            dataKey="value"
+                            stroke="none"
+                        >
+                            {dadosPizza.map((item, index) => (
+                                <Cell
+                                    key={index}
+                                    fill={item.color}
+                                />
+                            ))}
+                        </Pie>
+
+                        <Tooltip
+                            contentStyle={tooltipStyle}
+                        />
+
+                        <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                            wrapperStyle={{
+                                fontSize: "12px",
+                            }}
+                        />
+                    </PieChart>
+                </ChartContainer>
+
+
+                <ChartContainer
+                    title="Disciplinas com Mais Reprovações"
+                    subtitle="Disciplinas com maior número de reprovações no histórico do aluno."
+                    height={280}
+                    emptyState={
+                        materiasCriticas.length === 0 ? (
+                            <>
+                                <CheckCircle2
+                                    size={30}
+                                    className="text-[#2F7D5A]"
+                                />
+
+                                <p className="text-sm text-gray-500">
+                                    Nenhuma reprovação registrada.
+                                </p>
+                            </>
+                        ) : null
+                    }
+                >
+                    <BarChart
+                        data={materiasCriticas}
+                        layout="vertical"
+                        margin={{ top: 10, right: 20, left: 10, bottom: 0 }}
+                    >
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            horizontal={true}
+                            vertical={false}
+                            stroke={CORES.borda}
+                        />
+
+                        <XAxis
+                            type="number"
+                            allowDecimals={false}
+                            stroke={CORES.cinza}
+                            tick={{ fontSize: 11 }}
+                            axisLine={false}
+                            tickLine={false}
+                        />
+
+                        <YAxis
+                            dataKey="name"
+                            type="category"
+                            width={80}
+                            tick={{
+                                fontSize: 11,
+                                fill: CORES.texto,
+                                fontWeight: 600,
+                            }}
+                            axisLine={false}
+                            tickLine={false}
+                        />
+
+                        <Tooltip
+                            cursor={{
+                                fill: "#FEF2F2",
+                            }}
+                            contentStyle={tooltipStyle}
+                            formatter={(valor) => [
+                                `${valor} reprovações`,
+                                "Total",
+                            ]}
+                        />
+
+                        <Bar
+                            name="Reprovações"
+                            dataKey="reprovacoes"
+                            fill={CORES.vermelho}
+                            radius={[0, 4, 4, 0]}
+                            barSize={22}
+                        />
+                    </BarChart>
+                </ChartContainer>
+            </div>
+
+            {/* Histórico acadêmico */}
+            <section className="mb-8">
+                <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                            Histórico de Disciplinas
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                            Registro das disciplinas e
+                            respectivas situações acadêmicas
+                            do aluno.
+                        </p>
+                    </div>
+
+                    <span className="text-xs font-medium text-gray-500">
+                        {totalDisciplinas}{" "}
+                        {totalDisciplinas === 1
+                            ? "disciplina registrada"
+                            : "disciplinas registradas"}
+                    </span>
+                </div>
+
+                <DataTable
+                    columns={colunasHistorico}
+                    data={historico}
+                    isLoading={carregando}
+                    emptyMessage="Nenhuma disciplina encontrada no histórico deste aluno."
+                />
+            </section>
+        </div>
     );
 }

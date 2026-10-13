@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import MainLayout from "../layouts/MainLayout"; 
 import Login from "../pages/Login";
-import Register from "../pages/Register";
 import RecoverPassword from "../pages/RecoverPassword";
 
 
@@ -28,7 +27,6 @@ const ProtectedRoute = () => {
 export const appRoutes = createBrowserRouter([
 
   { path: "/", element: <Login /> },
-  { path: "/register", element: <Register /> },
   { path: "/recoverpassword", element: <RecoverPassword /> },
 
   {

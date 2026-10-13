@@ -14,6 +14,6 @@ class UsuarioModel(Base):
     nome = Column(String(200), nullable=False)
     email = Column(String(200), unique=True, index=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
-    papel = Column(Enum(PapelUsuario), nullable=False, default=PapelUsuario.COORDENACAO)
+    papel = Column(Enum(PapelUsuario, values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=PapelUsuario.COORDENACAO)
     data_criacao= Column(DateTime(timezone=True), server_default=func.now())
     
