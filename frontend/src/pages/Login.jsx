@@ -31,11 +31,11 @@ export default function Login() {
       const response = await api.post("/api/auth/login", params);
 
       const token = response.data.token || response.data.access_token;
-        
+      const refreshToken = response.data.refresh_token;
       const user = response.data.user;
 
       if (token) {
-        signIn(user, token)
+        signIn(user, token, refreshToken)
         navigate("/inicial");
       }
     } catch (err) {

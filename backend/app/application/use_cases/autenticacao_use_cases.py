@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models.usuario_model import UsuarioModel
 from app.application.dtos.autenticacao_dto import RegistroUsuarioInput, LoginUsuarioInput, TokenOutput
-from app.infrastructure.security.security_service import hash_password, verify_password, create_access_token
+from app.infrastructure.security.security_service import hash_password, verify_password, gerar_par_tokens
 
 class RegistrarUsuarioUseCases:
     def __init__(self, db: Session):
@@ -36,14 +36,11 @@ class LoginUsuarioUseCase:
         if not usuario or not verify_password(dados.senha, usuario.senha_hash):
             raise ValueError("Credenciais inválidas.")
 
-        token = create_access_token({
-            "sub": str(usuario.id), 
-            "email": usuario.email, 
-            "papel": usuario.papel.value
-        })
+        access_token, refresh_token = gerar_par_tokens(usuario)
         
         return TokenOutput(
-            access_token=token,
+            access_token=access_token,
+            refresh_token= refresh_token,
             token_type="bearer",
-            user={"nome": usuario.nome, "email": usuario.email}
+            user={"nome": usuario.nome, "email": usuario.email, "papel": usuario.papel.value}
         )

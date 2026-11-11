@@ -4,8 +4,8 @@ from sqlalchemy import Column, Integer, String, Enum, DateTime
 from app.infrastructure.db.session import Base
 
 class PapelUsuario(str, enum.Enum):
-    DAE = "dae"
-    COORDENACAO = "coordenacao"
+    DAE = "dae" # usuario admin
+    COORDENACAO = "coordenacao" #usuario comum
 
 class UsuarioModel(Base):
     __tablename__ = "usuario" 

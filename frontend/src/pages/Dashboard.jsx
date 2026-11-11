@@ -11,6 +11,7 @@ import ChartContainer from "../components/ChartContainer";
 import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
 import KPICard from "../components/KPICard";
 import { Users, AlertTriangle, TrendingDown, GraduationCap  } from "lucide-react";
+import RetentionMap from "../components/RetentionMap";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ export default function Dashboard() {
     grafico_semestres: [],
     grafico_cursos: [],
     grafico_materias: [],
+    grafico_ira: [],
+    grafico_municipios: [],
   });
 
   const [carregando, setCarregando] = useState(true);
@@ -65,7 +68,7 @@ export default function Dashboard() {
       icon: <Users size={18} />,
     },
     {
-      title: "Alunos não formados",
+      title: "Alunos matriculados",
       value: dados.total_cursando,
       icon: <GraduationCap size={18} />,
     },
@@ -118,94 +121,35 @@ export default function Dashboard() {
           ))
         )}
       </div>
-
-      <div className="mb-8">
+      {/* NÍVEL 2: Visão Macro (Curso/Matérias) + Evolução Temporal (Ano de Ingresso) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {carregando ? (
           <SkeletonChart />
         ) : !filtroCurso ? (
           <ChartContainer
             title="Retenção por Curso"
-            subtitle="Número de alunos retidos em cada curso."
-            height={320}
+            subtitle="Número de alunos retidos em cada curso da unidade."
+            height={280}
           >
-            <BarChart data={dados.grafico_cursos} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+            <BarChart
+              data={dados.grafico_cursos}
+              layout="vertical"
+              margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
+            >
               <CartesianGrid
                 strokeDasharray="3 3"
                 horizontal={true}
                 vertical={false}
                 stroke="#E5E7EB"
               />
-
-              <XAxis
-                type="number"
-                stroke="#9CA3AF"
-                tick={{ fontSize: 12 }}
-              />
-
+              <XAxis type="number" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
               <YAxis
                 dataKey="curso"
                 type="category"
                 stroke="#9CA3AF"
-                tick={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fill: "#4B5563",
-                }}
-                width={200}
+                tick={{ fontSize: 11, fontWeight: 600, fill: "#4B5563" }}
+                width={175}
               />
-
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "6px",
-                  padding: "8px 10px",
-                  fontSize: "12px",
-                }}
-                cursor={{ fill: "#F9FAFB" }}
-              />
-
-              <Bar
-                name="Alunos Retidos"
-                dataKey="retidos"
-                fill="#005386"
-                radius={[0, 4, 4, 0]}
-                barSize={28}
-              />
-            </BarChart>
-          </ChartContainer>
-        ) : (
-          <ChartContainer
-            title="Disciplinas com Maior Reprovação"
-            subtitle="Principais disciplinas associadas à retenção dos alunos no curso."
-            height={320}
-          >
-            <BarChart data={dados.grafico_materias} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                horizontal={true}
-                vertical={false}
-                stroke="#E5E7EB"
-              />
-
-              <XAxis
-                type="number"
-                stroke="#9CA3AF"
-                tick={{ fontSize: 12 }}
-              />
-
-              <YAxis
-                dataKey="materia"
-                type="category"
-                stroke="#9CA3AF"
-                tick={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fill: "#4B5563",
-                }}
-                width={220}
-              />
-
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#fff",
@@ -216,45 +160,85 @@ export default function Dashboard() {
                 }}
                 cursor={{ fill: "#FEF2F2" }}
               />
-
+              <Bar
+                name="Alunos Retidos"
+                dataKey="retidos"
+                fill="#C2413B"
+                radius={[0, 4, 4, 0]}
+                barSize={24}
+              />
+            </BarChart>
+          </ChartContainer>
+        ) : (
+          <ChartContainer
+            title="Disciplinas com Maior Reprovação"
+            subtitle="Principais disciplinas associadas à retenção no curso."
+            height={280}
+          >
+            <BarChart
+              data={dados.grafico_materias}
+              layout="vertical"
+              margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={true}
+                vertical={false}
+                stroke="#E5E7EB"
+              />
+              <XAxis type="number" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+              <YAxis
+                dataKey="materia"
+                type="category"
+                stroke="#9CA3AF"
+                tick={{ fontSize: 11, fontWeight: 600, fill: "#4B5563" }}
+                width={185}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "6px",
+                  padding: "8px 10px",
+                  fontSize: "12px",
+                }}
+                cursor={{ fill: "#FEF2F2" }}
+              />
               <Bar
                 name="Total de Reprovações"
                 dataKey="reprovacoes"
                 fill="#C2413B"
                 radius={[0, 4, 4, 0]}
-                barSize={28}
+                barSize={24}
               />
             </BarChart>
           </ChartContainer>
         )}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-        {carregando ? <SkeletonChart /> : (
+        {carregando ? (
+          <SkeletonChart />
+        ) : (
           <ChartContainer
             title="Retenção por Ano de Ingresso"
             subtitle="Comparativo entre alunos ingressantes e retidos ao longo dos anos."
+            height={280}
           >
-            <LineChart data={dados.grafico} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <LineChart
+              data={dados.grafico}
+              margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+            >
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
                 stroke="#E5E7EB"
               />
-
               <XAxis
                 dataKey="ano"
                 stroke="#9CA3AF"
                 tick={{ fontSize: 12 }}
                 tickMargin={10}
               />
-
-              <YAxis
-                stroke="#9CA3AF"
-                tick={{ fontSize: 11 }}
-              />
-
+              <YAxis stroke="#9CA3AF" tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#fff",
@@ -264,12 +248,10 @@ export default function Dashboard() {
                   fontSize: "12px",
                 }}
               />
-
               <Legend
                 wrapperStyle={{ paddingTop: "10px" }}
                 iconType="circle"
               />
-
               <Line
                 name="Ingressantes"
                 type="monotone"
@@ -278,7 +260,6 @@ export default function Dashboard() {
                 strokeWidth={2}
                 dot={false}
               />
-
               <Line
                 name="Retidos"
                 type="monotone"
@@ -290,29 +271,116 @@ export default function Dashboard() {
             </LineChart>
           </ChartContainer>
         )}
+      </div>
 
-        {carregando ? <SkeletonChart /> : (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {carregando ? (
+          <SkeletonChart />
+        ) : (
           <ChartContainer
             title="Retenção por Semestre"
-            subtitle="Distribuição dos alunos retidos conforme o semestre atual."
+            subtitle="Distribuição dos alunos retidos conforme o semestre cursado."
+            height={280}
           >
-            <BarChart data={dados.grafico_semestres} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="semestre" stroke="#9CA3AF" tick={{ fontSize: 12 }} tickMargin={10} />
+            <BarChart
+              data={dados.grafico_semestres}
+              margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#E5E7EB"
+              />
+              <XAxis
+                dataKey="semestre"
+                stroke="#9CA3AF"
+                tick={{ fontSize: 12 }}
+                tickMargin={10}
+              />
               <YAxis stroke="#9CA3AF" tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#fff",
-                  border: "1px solid #E2E8F0",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "6px",
+                  padding: "8px 10px",
+                  fontSize: "12px",
+                }}
+                cursor={{ fill: "#FEF2F2" }}
+              />
+              <Bar
+                name="Alunos Retidos"
+                dataKey="retidos"
+                fill="#C2413B"
+                radius={[4, 4, 0, 0]}
+                barSize={28}
+              />
+            </BarChart>
+          </ChartContainer>
+        )}
+
+        {carregando ? (
+          <SkeletonChart />
+        ) : (
+          <ChartContainer
+            title="Retenção por Faixa de Rendimento (IRA)"
+            subtitle="Comparativo entre alunos regulares e retidos por faixa de IRA."
+            height={280}
+          >
+            <BarChart
+              data={dados.grafico_ira}
+              margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#E5E7EB"
+              />
+              <XAxis
+                dataKey="faixa"
+                stroke="#9CA3AF"
+                tick={{ fontSize: 12 }}
+                tickMargin={10}
+              />
+              <YAxis stroke="#9CA3AF" tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #E5E7EB",
                   borderRadius: "6px",
                   padding: "8px 10px",
                   fontSize: "12px",
                 }}
                 cursor={{ fill: "#F9FAFB" }}
               />
-              <Bar name="Alunos Retidos" dataKey="retidos" fill="#005386" radius={[4, 4, 0, 0]} barSize={32} />
+              <Legend
+                wrapperStyle={{ paddingTop: "10px" }}
+                iconType="circle"
+              />
+              <Bar
+                name="Em Fluxo Regular"
+                dataKey="regulares"
+                fill="#005386"
+                radius={[4, 4, 0, 0]}
+                barSize={26}
+              />
+              <Bar
+                name="Retidos"
+                dataKey="retidos"
+                fill="#C2413B"
+                radius={[4, 4, 0, 0]}
+                barSize={26}
+              />
             </BarChart>
           </ChartContainer>
+        )}
+      </div>
+
+      <div className="mb-8">
+        {carregando ? (
+          <SkeletonChart />
+        ) : (
+          <RetentionMap dados={dados.grafico_municipios} />
         )}
       </div>
     </div>

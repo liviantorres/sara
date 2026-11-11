@@ -1,56 +1,52 @@
-version: '3.8'
-
 services:
-  # 🗄️ Banco de Dados
   db:
     image: postgres:15-alpine
     container_name: sara_db
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgresql
-      POSTGRES_DB: sara
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
-  # ⚙️ Backend
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: sara_backend
+    env_file:
+      - .env
     environment:
-      - DB_USER=postgres
-      - DB_PASSWORD=postgresql
-      - DB_HOST=db # Aponta para o container do banco logo acima!
+      - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=sara
-      - JWT_SECRET_KEY=lq_cBdHpAx4PvCOaAmH6qF4KLnYZJHotJvDLX_rHsa0
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8090}:8000"
     volumes:
-      - ./backend:/app  # Espelha sua pasta backend para o container
+      - ./backend:/app
     depends_on:
       - db
+    restart: always
 
-  # 🖥️ Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: sara_frontend
-    environment:
-      - VITE_URL_API=http://localhost:8000
+    env_file:
+      - .env
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     volumes:
-      - ./frontend:/app   # Espelha sua pasta frontend para o container
-      - /app/node_modules # Impede conflitos da node_modules local com a do linux
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
+    restart: always
 
-# Garante que o banco de dados não perca os dados se você reiniciar
 volumes:
   postgres_data:
