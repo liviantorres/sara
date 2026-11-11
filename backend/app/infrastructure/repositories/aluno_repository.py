@@ -154,17 +154,72 @@ class AlunoRepository:
                     "semestre": f"{item.semestre_atual}º Sem",
                     "retidos": item.retidos
                 })
-        
-        dict_total_ano = {item.ano_ingresso: item.total_ingressantes for item in total_ano_bd}
+
+        dict_retidos_ano = {item.ano_ingresso: item.retidos for item in grafico_bd}
 
         dados_graficos = []
-        for item in grafico_bd:
+        for item in sorted(total_ano_bd, key=lambda x: str(x.ano_ingresso or "")):
             if item.ano_ingresso is not None:
                 dados_graficos.append({
                     "ano": str(item.ano_ingresso),
-                    "retidos": item.retidos,
-                    "total": dict_total_ano.get(item.ano_ingresso, 0)
+                    "retidos": dict_retidos_ano.get(item.ano_ingresso, 0),
+                    "total": item.total_ingressantes
                 })
+        alunos_ativos = q_cursando.all()
+        faixas_ira = {
+            "IRA < 5.0": {"faixa": "IRA < 5.0", "regulares": 0, "retidos": 0},
+            "5.0 a 6.9": {"faixa": "5.0 a 6.9", "regulares": 0, "retidos": 0},
+            "7.0 a 7.9": {"faixa": "7.0 a 7.9", "regulares": 0, "retidos": 0},
+            "IRA ≥ 8.0": {"faixa": "IRA ≥ 8.0", "regulares": 0, "retidos": 0},
+        }
+
+        for a in alunos_ativos:
+            ira_val = a.ira or 0.0
+            limite_sem = 10 if a.curso_id in [2, 4, 5] else 8
+            retido = (a.semestre_atual or 0) > limite_sem
+
+            if ira_val < 5.0:
+                chave = "IRA < 5.0"
+            elif ira_val < 7.0:
+                chave = "5.0 a 6.9"
+            elif ira_val < 8.0:
+                chave = "7.0 a 7.9"
+            else:
+                chave = "IRA ≥ 8.0"
+
+            if retido:
+                faixas_ira[chave]["retidos"] += 1
+            else:
+                faixas_ira[chave]["regulares"] += 1
+
+        dados_ira = list(faixas_ira.values())
+
+        mapa_municipios = {}
+        for a in alunos_ativos:
+            mun = (a.municipio_reside or "").strip().upper()
+            if not mun:
+                continue
+            limite_sem = 10 if a.curso_id in [2, 4, 5] else 8
+            retido = (a.semestre_atual or 0) > limite_sem
+
+            if mun not in mapa_municipios:
+                mapa_municipios[mun] = {"municipio": mun.title(), "key": mun, "total": 0, "retidos": 0}
+
+            mapa_municipios[mun]["total"] += 1
+            if retido:
+                mapa_municipios[mun]["retidos"] += 1
+
+        dados_municipios = sorted(
+            [
+                {
+                    **v,
+                    "taxa": round((v["retidos"] / v["total"]) * 100, 1) if v["total"] > 0 else 0.0
+                }
+                for v in mapa_municipios.values()
+            ],
+            key=lambda x: x["total"],
+            reverse=True
+        )
 
         return {
             "total_alunos": total_alunos,
@@ -173,5 +228,7 @@ class AlunoRepository:
             "grafico": dados_graficos,
             "grafico_semestres": dados_semestres,
             "grafico_cursos": dados_cursos,
-            "grafico_materias": dados_materias
+            "grafico_materias": dados_materias,
+            "grafico_ira": dados_ira,
+            "grafico_municipios": dados_municipios,
         }

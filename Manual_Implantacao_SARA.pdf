@@ -1,0 +1,279 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Length 4752 >>
+stream
+0.11 0.25 0.69 rg
+48 743 499.28 48 re f
+1 1 1 rg
+BT /F2 16 Tf 62 763 Td (Manual de Implanta\347\343o em Servidor - Sistema SARA) Tj ET
+0.85 0.91 1 rg
+BT /F1 9.5 Tf 62 749 Td (Sistema de Acompanhamento do Rendimento Acad\352mico \(UFPA\) | Guia de Infraestrutura e Deploy) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 717 Td (1. Vis\343o Geral da Arquitetura) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 712 m 547.28 712 l S
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 48 697 Td (O Sistema SARA \351 integralmente conteinerizado via Docker e orquestrado com Docker) Tj ET
+BT /F1 9.5 Tf 48 683.5 Td (Compose. A aplica\347\343o \351 dividida em 3 containers isolados que se comunicam por uma rede) Tj ET
+BT /F1 9.5 Tf 48 670 Td (interna pr\363pria, com persist\352ncia de dados garantida por volume Docker \(postgres_data\).) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 653.5 Td (\267 sara_frontend: Interface Web \(React + Vite\) para acesso dos usu\341rios pelo navegador.) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 640 Td (\267 sara_backend: API REST \(FastAPI + Python 3.11 + SQLAlchemy\) com autentica\347\343o JWT e) Tj ET
+BT /F1 9.5 Tf 56 626.5 Td (  RBAC.) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 613 Td (\267 sara_db: Banco de Dados Relacional \(PostgreSQL 15\) com volume persistente.) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 591.5 Td (2. Mapeamento de Portas \(Sem Conflitos no Servidor\)) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 586.5 m 547.28 586.5 l S
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 48 571.5 Td (As portas externas foram configuradas especificamente para evitar qualquer colis\343o com) Tj ET
+BT /F1 9.5 Tf 48 558 Td (as portas j\341 em uso no servidor de destino \(8000, 8001, 8081, 8082, 8083, 8100, 8501 e) Tj ET
+BT /F1 9.5 Tf 48 544.5 Td (15672\):) Tj ET
+0 0 0 rg
+0.91 0.94 0.98 rg
+48 514 499.28 18 re f
+0.75 0.80 0.88 RG 0.6 w
+48 514 499.28 18 re S
+0.10 0.20 0.45 rg
+BT /F2 8.8 Tf 54 519 Td (Container) Tj ET
+BT /F2 8.8 Tf 149 519 Td (Tecnologia) Tj ET
+BT /F2 8.8 Tf 264 519 Td (Porta Externa \(Host\)) Tj ET
+BT /F2 8.8 Tf 369 519 Td (Porta Interna) Tj ET
+BT /F2 8.8 Tf 449 519 Td (Vari\341vel no .env) Tj ET
+0.83 0.86 0.91 RG 0.5 w
+48 496 499.28 18 re S
+0.15 0.18 0.22 rg
+BT /F2 8.5 Tf 54 501 Td (sara_frontend) Tj ET
+BT /F1 8.5 Tf 149 501 Td (React + Vite) Tj ET
+BT /F2 8.5 Tf 264 501 Td (5173) Tj ET
+BT /F1 8.5 Tf 369 501 Td (5173) Tj ET
+BT /F1 8.5 Tf 449 501 Td (FRONTEND_PORT=5173) Tj ET
+0.97 0.98 0.99 rg
+48 478 499.28 18 re f
+0.83 0.86 0.91 RG 0.5 w
+48 478 499.28 18 re S
+0.15 0.18 0.22 rg
+BT /F2 8.5 Tf 54 483 Td (sara_backend) Tj ET
+BT /F1 8.5 Tf 149 483 Td (FastAPI \(Python 3.11\)) Tj ET
+BT /F2 8.5 Tf 264 483 Td (8090) Tj ET
+BT /F1 8.5 Tf 369 483 Td (8000) Tj ET
+BT /F1 8.5 Tf 449 483 Td (BACKEND_PORT=8090) Tj ET
+0.83 0.86 0.91 RG 0.5 w
+48 460 499.28 18 re S
+0.15 0.18 0.22 rg
+BT /F2 8.5 Tf 54 465 Td (sara_db) Tj ET
+BT /F1 8.5 Tf 149 465 Td (PostgreSQL 15) Tj ET
+BT /F2 8.5 Tf 264 465 Td (5433) Tj ET
+BT /F1 8.5 Tf 369 465 Td (5432) Tj ET
+BT /F1 8.5 Tf 449 465 Td (DB_EXTERNAL_PORT=5433) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 48 448 Td (Observa\347\343o: Caso alguma dessas portas \(5173, 8090 ou 5433\) precise ser alterada) Tj ET
+BT /F1 9.5 Tf 48 434.5 Td (futuramente, basta modificar os valores no arquivo .env na raiz do projeto, sem) Tj ET
+BT /F1 9.5 Tf 48 421 Td (necessidade de editar o c\363digo-fonte.) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 396.5 Td (3. Pr\351-requisitos no Servidor) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 391.5 m 547.28 391.5 l S
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 376.5 Td (\267 1. Docker Engine \(v20.10+\) e Docker Compose V2 \(docker compose\).) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 363 Td (\267 2. Git instalado para clonar o reposit\363rio.) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 349.5 Td (\267 3. Libera\347\343o de Firewall / Proxy Reverso \(Nginx/Apache/Traefik\) para as portas 5173) Tj ET
+BT /F1 9.5 Tf 56 336 Td (  \(Frontend\) e 8090 \(API Backend\). A porta 5433 \(PostgreSQL\) deve permanecer restrita) Tj ET
+BT /F1 9.5 Tf 56 322.5 Td (  ao localhost.) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 301 Td (4. Configura\347\343o do Arquivo .env \(Obrigat\363rio\)) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 296 m 547.28 296 l S
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 48 281 Td (Por quest\365es de seguran\347a e conformidade com a LGPD, o arquivo .env n\343o est\341 versionado) Tj ET
+BT /F1 9.5 Tf 48 267.5 Td (no Git. Antes de iniciar os containers, crie o arquivo .env na pasta raiz do projeto \(ao) Tj ET
+BT /F1 9.5 Tf 48 254 Td (lado do docker-compose.yml\):) Tj ET
+0 0 0 rg
+0.5 0.55 0.6 rg
+BT /F1 8 Tf 48 28 Td (Sistema SARA \(UFPA\) - Manual de Implanta\347\343o em Servidor | P\341gina 1 de 3) Tj ET
+
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 4078 >>
+stream
+0.95 0.96 0.98 rg
+0.82 0.85 0.90 RG 0.7 w
+48 429 499.28 364 re B
+0.12 0.16 0.23 rg
+BT /F3 8.5 Tf 58 781 Td (# 1. BANCO DE DADOS \(POSTGRESQL\)) Tj ET
+BT /F3 8.5 Tf 58 768.5 Td (POSTGRES_USER=sara_admin) Tj ET
+BT /F3 8.5 Tf 58 756 Td (POSTGRES_PASSWORD=INSIRA_AQUI_UMA_SENHA_FORTE_DO_BANCO) Tj ET
+BT /F3 8.5 Tf 58 743.5 Td (POSTGRES_DB=sara_db) Tj ET
+BT /F3 8.5 Tf 58 731 Td (POSTGRES_HOST=db) Tj ET
+BT /F3 8.5 Tf 58 718.5 Td (POSTGRES_PORT=5432) Tj ET
+BT /F3 8.5 Tf 58 706 Td () Tj ET
+BT /F3 8.5 Tf 58 693.5 Td (# 2. PORTAS EXTERNAS DO SERVIDOR \(DOCKER HOST\)) Tj ET
+BT /F3 8.5 Tf 58 681 Td (BACKEND_PORT=8090) Tj ET
+BT /F3 8.5 Tf 58 668.5 Td (FRONTEND_PORT=5173) Tj ET
+BT /F3 8.5 Tf 58 656 Td (DB_EXTERNAL_PORT=5433) Tj ET
+BT /F3 8.5 Tf 58 643.5 Td () Tj ET
+BT /F3 8.5 Tf 58 631 Td (# 3. SEGURANCA E AUTENTICACAO \(JWT + CORS\)) Tj ET
+BT /F3 8.5 Tf 58 618.5 Td (# Gere a chave com: openssl rand -hex 32) Tj ET
+BT /F3 8.5 Tf 58 606 Td (JWT_SECRET_KEY=INSIRA_AQUI_UMA_CHAVE_HEXADECIMAL_DE_64_CARACTERES) Tj ET
+BT /F3 8.5 Tf 58 593.5 Td (CORS_ORIGINS=http://IP_OU_DOMINIO_DO_SERVIDOR:5173) Tj ET
+BT /F3 8.5 Tf 58 581 Td () Tj ET
+BT /F3 8.5 Tf 58 568.5 Td (# 4. URL DA API PARA O FRONTEND \(Acessada pelo navegador do cliente\)) Tj ET
+BT /F3 8.5 Tf 58 556 Td (VITE_URL_API=http://IP_OU_DOMINIO_DO_SERVIDOR:8090/api) Tj ET
+BT /F3 8.5 Tf 58 543.5 Td () Tj ET
+BT /F3 8.5 Tf 58 531 Td (# 5. CREDENCIAIS INICIAIS \(Criadas automaticamente no 1o boot\)) Tj ET
+BT /F3 8.5 Tf 58 518.5 Td (ADMIN_NOME=Administrador DAE) Tj ET
+BT /F3 8.5 Tf 58 506 Td (ADMIN_EMAIL=admin@ufpa.br) Tj ET
+BT /F3 8.5 Tf 58 493.5 Td (ADMIN_SENHA=INSIRA_SENHA_FORTE_ADMIN) Tj ET
+BT /F3 8.5 Tf 58 481 Td () Tj ET
+BT /F3 8.5 Tf 58 468.5 Td (USUARIO_NOME=Usuario Consulta) Tj ET
+BT /F3 8.5 Tf 58 456 Td (USUARIO_EMAIL=usuario@ufpa.br) Tj ET
+BT /F3 8.5 Tf 58 443.5 Td (USUARIO_SENHA=INSIRA_SENHA_FORTE_USUARIO) Tj ET
+0 0 0 rg
+0.15 0.25 0.40 rg
+BT /F2 10.5 Tf 48 411 Td (Pontos de Aten\347\343o no .env:) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 396 Td (\267 VITE_URL_API: Como o React roda no navegador do usu\341rio final, nunca utilize) Tj ET
+BT /F1 9.5 Tf 56 382.5 Td (  "localhost" em produ\347\343o. Substitua pelo IP p\372blico/institucional ou dom\355nio do) Tj ET
+BT /F1 9.5 Tf 56 369 Td (  servidor \(ex: http://200.xxx.xxx.xxx:8090/api\).) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 355.5 Td (\267 CORS_ORIGINS: Deve conter exatamente o endere\347o do Frontend acessado pelo navegador) Tj ET
+BT /F1 9.5 Tf 56 342 Td (  \(ex: http://200.xxx.xxx.xxx:5173\).) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 328.5 Td (\267 Seed Autom\341tico: No primeiro boot, o backend cria automaticamente as contas ADMIN) Tj ET
+BT /F1 9.5 Tf 56 315 Td (  \(papel dae, com acesso \340 importa\347\343o de dados\) e USUARIO \(papel coordenacao, acesso) Tj ET
+BT /F1 9.5 Tf 56 301.5 Td (  somente leitura aos dashboards\).) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 280 Td (5. Passo a Passo para Subir a Aplica\347\343o) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 275 m 547.28 275 l S
+0 0 0 rg
+0.95 0.96 0.98 rg
+0.82 0.85 0.90 RG 0.7 w
+48 91.5 499.28 176.5 re B
+0.12 0.16 0.23 rg
+BT /F3 8.5 Tf 58 256 Td (# 1. Clonar o repositorio e acessar a branch) Tj ET
+BT /F3 8.5 Tf 58 243.5 Td (git clone <URL_DO_REPOSITORIO> sara) Tj ET
+BT /F3 8.5 Tf 58 231 Td (cd sara) Tj ET
+BT /F3 8.5 Tf 58 218.5 Td (git checkout feat/docker-e-padronizacao-ui) Tj ET
+BT /F3 8.5 Tf 58 206 Td () Tj ET
+BT /F3 8.5 Tf 58 193.5 Td (# 2. Criar e preencher o arquivo .env na raiz do projeto) Tj ET
+BT /F3 8.5 Tf 58 181 Td (nano .env) Tj ET
+BT /F3 8.5 Tf 58 168.5 Td () Tj ET
+BT /F3 8.5 Tf 58 156 Td (# 3. Construir as imagens e subir os containers em background) Tj ET
+BT /F3 8.5 Tf 58 143.5 Td (docker compose up -d --build) Tj ET
+BT /F3 8.5 Tf 58 131 Td () Tj ET
+BT /F3 8.5 Tf 58 118.5 Td (# 4. Verificar se os 3 containers estao rodando \(Up\)) Tj ET
+BT /F3 8.5 Tf 58 106 Td (docker compose ps) Tj ET
+0 0 0 rg
+0.5 0.55 0.6 rg
+BT /F1 8 Tf 48 28 Td (Sistema SARA \(UFPA\) - Manual de Implanta\347\343o em Servidor | P\341gina 2 de 3) Tj ET
+
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1670 >>
+stream
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 777 Td (6. Checklist de Valida\347\343o P\363s-Implanta\347\343o) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 772 m 547.28 772 l S
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 757 Td (\267 1. Healthcheck da API: Execute "curl http://localhost:8090/" no servidor e verifique) Tj ET
+BT /F1 9.5 Tf 56 743.5 Td (  se retorna {"mensagem":"API do Projeto SARA est\341 online e operante!"}.) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 730 Td (\267 2. Logs de Inicializa\347\343o: Execute "docker compose logs backend --tail=30" e confirme) Tj ET
+BT /F1 9.5 Tf 56 716.5 Td (  a cria\347\343o das tabelas e dos usu\341rios iniciais.) Tj ET
+0 0 0 rg
+0.15 0.18 0.22 rg
+BT /F1 9.5 Tf 56 703 Td (\267 3. Acesso Web: Acesse http://IP_DO_SERVIDOR:5173 no navegador e realize login com as) Tj ET
+BT /F1 9.5 Tf 56 689.5 Td (  credenciais definidas em ADMIN_EMAIL e ADMIN_SENHA.) Tj ET
+0 0 0 rg
+0.12 0.23 0.54 rg
+BT /F2 12.5 Tf 48 668 Td (7. Comandos \332teis de Manuten\347\343o e Backup) Tj ET
+0.80 0.84 0.90 RG 1 w
+48 663 m 547.28 663 l S
+0 0 0 rg
+0.95 0.96 0.98 rg
+0.82 0.85 0.90 RG 0.7 w
+48 579.5 499.28 76.5 re B
+0.12 0.16 0.23 rg
+BT /F3 8.5 Tf 58 644 Td (# Reiniciar servicos apos alteracao no .env) Tj ET
+BT /F3 8.5 Tf 58 631.5 Td (docker compose down && docker compose up -d) Tj ET
+BT /F3 8.5 Tf 58 619 Td () Tj ET
+BT /F3 8.5 Tf 58 606.5 Td (# Realizar backup completo do banco PostgreSQL) Tj ET
+BT /F3 8.5 Tf 58 594 Td (docker exec -t sara_db pg_dump -U sara_admin sara_db > backup_sara_$\(date +%F\).sql) Tj ET
+0 0 0 rg
+0.5 0.55 0.6 rg
+BT /F1 8 Tf 48 28 Td (Sistema SARA \(UFPA\) - Manual de Implanta\347\343o em Servidor | P\341gina 3 de 3) Tj ET
+
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000134 00000 n 
+0000000231 00000 n 
+0000000333 00000 n 
+0000000428 00000 n 
+0000005232 00000 n 
+0000005384 00000 n 
+0000009514 00000 n 
+0000009666 00000 n 
+0000011389 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R >>
+startxref
+11543
+%%EOF

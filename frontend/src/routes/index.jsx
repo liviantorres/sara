@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import MainLayout from "../layouts/MainLayout"; 
+import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/Login";
 import RecoverPassword from "../pages/RecoverPassword";
 
@@ -21,7 +21,19 @@ const SuspenseWrapper = ({ children }) => (
 const ProtectedRoute = () => {
   const isAuthenticated = !!localStorage.getItem("@App:token");
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
+};
+
+const DaeRoute = () => {
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("@App:user") || "{}");
+    if (storedUser?.papel === "dae") {
+      return <Outlet />;
+    }
+  } catch {
+
+  }
+  return <Navigate to="/inicial" replace />;
 };
 
 export const appRoutes = createBrowserRouter([
@@ -30,16 +42,21 @@ export const appRoutes = createBrowserRouter([
   { path: "/recoverpassword", element: <RecoverPassword /> },
 
   {
-    element: <ProtectedRoute />, 
+    element: <ProtectedRoute />,
     children: [
       {
-        element: <MainLayout />, 
+        element: <MainLayout />,
         children: [
-         { path: "/inicial", element: <SuspenseWrapper><Dashboard /></SuspenseWrapper> },
+          { path: "/inicial", element: <SuspenseWrapper><Dashboard /></SuspenseWrapper> },
           { path: "/alunos", element: <SuspenseWrapper><Students /></SuspenseWrapper> },
           { path: "/alunos/:matricula", element: <SuspenseWrapper><StudentProfile /></SuspenseWrapper> },
           { path: "/disciplinas", element: <SuspenseWrapper><Disciplines /></SuspenseWrapper> },
-          { path: "/importacao", element: <SuspenseWrapper><DataImport /></SuspenseWrapper> },
+          {
+            element: <DaeRoute />,
+            children: [
+              { path: "/importacao", element: <SuspenseWrapper><DataImport /></SuspenseWrapper> },
+            ]
+          }
         ],
       },
     ],

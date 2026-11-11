@@ -23,18 +23,30 @@ export function AuthProvider({ children }) {
     return null;
   });
 
-  const signIn = (userData, token) => {
+  const signIn = (userData, token, refreshToken) => {
     setUser(userData);
     localStorage.setItem("@App:user", JSON.stringify(userData));
     localStorage.setItem("@App:token", token);
+    
+    if (refreshToken) localStorage.setItem("@App:refresh", refreshToken);
 
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    const refreshToken = 
+    localStorage.getItem("@App:refresh");
+    if(refreshToken){
+      try {
+        await api.post("/api/auth/logout", {
+          refresh_token:refreshToken
+        });
+      } catch {}
+    }
     setUser(null);
     localStorage.removeItem("@App:user");
     localStorage.removeItem("@App:token");
+    localStorage.removeItem("@App:refresh")
     delete api.defaults.headers.common["Authorization"];
     window.location.href = "/";
   };

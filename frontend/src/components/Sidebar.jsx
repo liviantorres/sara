@@ -1,16 +1,19 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, BookOpen, Database, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Sidebar({ collapsed, setCollapsed }) {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
+  const isDae = user?.papel === "dae";
 
   const navItems = [
     { label: "Dashboard", path: "/inicial", icon: Home },
     { label: "Alunos", path: "/alunos", icon: Users },
     { label: "Disciplinas", path: "/disciplinas", icon: BookOpen },
-    { label: "Importar Dados", path: "/importacao", icon: Database },
+    ...(isDae ? [{ label: "Importar Dados", path: "/importacao", icon: Database }]: []),
   ];
 
   return (

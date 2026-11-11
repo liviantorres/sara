@@ -20,7 +20,7 @@ export default function ExportGroup({ onExport }) {
                 onClick={() => onExport("excel")}
                 className="h-full px-3 text-sm text-gray-600 border-l border-gray-100 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
             >
-                Excel
+                XLSX
             </button>
 
             <button

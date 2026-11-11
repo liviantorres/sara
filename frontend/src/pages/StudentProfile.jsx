@@ -223,7 +223,7 @@ export default function StudentProfile() {
         {
             name: "Não concluídas",
             value: naoConcluidas,
-            color: CORES.cinza,
+            color: CORES.vermelho,
         },
     ];
 
@@ -251,21 +251,15 @@ export default function StudentProfile() {
     }
 
     const materiasCriticas = [...historico]
-        .filter(
-            (item) => Number(item.qtd_reprovado) > 0
-        )
-        .sort(
-            (a, b) =>
-                Number(b.qtd_reprovado) -
-                Number(a.qtd_reprovado)
-        )
+        .filter((item) => Number(item.qtd_reprovado) > 0)
+        .sort((a, b) => Number(b.qtd_reprovado) - Number(a.qtd_reprovado))
         .slice(0, 5)
         .map((item) => ({
             name: item.disciplina_codigo,
+            nomeDisciplina: item.disciplina_nome || item.disciplina_codigo,
             reprovacoes: Number(item.qtd_reprovado),
         }));
 
-    // Indicadores exibidos nos KPICards
     const indicadores = [
         {
             title: "Reprovações",
@@ -310,8 +304,6 @@ export default function StudentProfile() {
         },
     ];
 
-    // Configuração da tabela de histórico
-    // Configuração da tabela de histórico com Nome + Código
     const colunasHistorico = [
         {
             header: "Disciplina",
@@ -626,10 +618,13 @@ export default function StudentProfile() {
                         />
 
                         <Tooltip
-                            cursor={{
-                                fill: "#FEF2F2",
-                            }}
+                            cursor={{ fill: "#FEF2F2" }}
                             contentStyle={tooltipStyle}
+                            labelFormatter={(label, payload) =>
+                                payload?.[0]?.payload?.nomeDisciplina
+                                    ? `${payload[0].payload.nomeDisciplina} (${label})`
+                                    : label
+                            }
                             formatter={(valor) => [
                                 `${valor} reprovações`,
                                 "Total",

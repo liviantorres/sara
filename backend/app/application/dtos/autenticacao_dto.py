@@ -11,5 +11,10 @@ class LoginUsuarioInput(BaseModel):
 
 class TokenOutput(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
     user: dict
+
+class RefreshTokenInput(BaseModel):
+    refresh_token: str
+

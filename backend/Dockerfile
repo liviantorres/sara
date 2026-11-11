@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # Comando para iniciar o servidor (com --reload para atualizar ao salvar o código!)
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
