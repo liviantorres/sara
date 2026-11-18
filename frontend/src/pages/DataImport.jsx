@@ -28,14 +28,10 @@ export default function DataImport() {
     const [statusManual, setStatusManual] = useState("idle");
     const [mensagemManual, setMensagemManual] = useState("");
     const [mostrarInstrucoes, setMostrarInstrucoes] = useState(false);
-
-    // Estados da sincronização automática
-    const [cursosSelecionados, setCursosSelecionados] = useState(
-        OPCOES_CURSOS.map((c) => c.id)
-    );
-    const [anoInicial, setAnoInicial] = useState("2016");
-    const [anoFinal, setAnoFinal] = useState("2024");
-    const [statusAuto, setStatusAuto] = useState("idle"); // idle | running | success | cancelled | error
+    const [cursosSelecionados, setCursosSelecionados] = useState([]);
+    const [anoInicial, setAnoInicial] = useState("");
+    const [anoFinal, setAnoFinal] = useState("");
+    const [statusAuto, setStatusAuto] = useState("idle");
     const [mensagemAuto, setMensagemAuto] = useState("");
     const [progressoInfo, setProgressoInfo] = useState({
         progresso: 0,
@@ -67,7 +63,7 @@ export default function DataImport() {
         }
     };
 
-    // Calcula uma prévia dos lotes de 3 em 3 anos
+
     const calcularPreviaLotes = () => {
         const ini = parseInt(anoInicial, 10);
         const fim = parseInt(anoFinal, 10);
@@ -83,6 +79,10 @@ export default function DataImport() {
     };
 
     const lotesPrevia = calcularPreviaLotes();
+    const podeSincronizarAuto =
+        cursosSelecionados.length > 0 &&
+        lotesPrevia.length > 0 &&
+        parseInt(anoInicial, 10) >= 2000;
 
     useEffect(() => {
         const consultarStatus = async () => {
@@ -111,7 +111,6 @@ export default function DataImport() {
                     setCancelando(false);
                 }
             } catch {
-                // Silencia erro de polling caso ainda não tenha iniciado
             }
         };
 
@@ -122,7 +121,27 @@ export default function DataImport() {
     }, []);
 
     const handleFileChange = (e) => {
-        setArquivos(Array.from(e.target.files));
+        const novosArquivos = Array.from(e.target.files);
+        if (novosArquivos.length === 0) return;
+
+        setArquivos((prev) => {
+            const nomesExistentes = new Set(prev.map((f) => f.name));
+            const filtrados = novosArquivos.filter((f) => !nomesExistentes.has(f.name));
+            return [...prev, ...filtrados];
+        });
+        setStatusManual("idle");
+        setMensagemManual("");
+        e.target.value = "";
+    };
+
+    const removerArquivo = (indexParaRemover) => {
+        setArquivos((prev) => prev.filter((_, idx) => idx !== indexParaRemover));
+        setStatusManual("idle");
+        setMensagemManual("");
+    };
+
+    const limparArquivos = () => {
+        setArquivos([]);
         setStatusManual("idle");
         setMensagemManual("");
     };
@@ -210,8 +229,8 @@ export default function DataImport() {
     return (
         <div className="min-h-screen font-figtree">
             <PageHeader
-                tag="Administração"
-                title="Integração de dados"
+                tag="Sincronização"
+                title="Integração de Dados"
                 description="Sincronize os dados acadêmicos do SARA por meio do DEYSI ou envie os arquivos manualmente."
             />
 
@@ -220,11 +239,6 @@ export default function DataImport() {
                 <section className="flex flex-col rounded-md border border-gray-200 bg-white">
                     <div className="p-6">
                         <div className="flex items-start gap-3">
-                            <Database
-                                size={20}
-                                className="mt-0.5 shrink-0 text-[#005386]"
-                            />
-
                             <div>
                                 <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
                                     Sincronização com DEYSI
@@ -249,7 +263,7 @@ export default function DataImport() {
                                     type="button"
                                     disabled={statusAuto === "running"}
                                     onClick={alternarTodosCursos}
-                                    className="cursor-pointer text-xs font-medium text-[#005386] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="cursor-pointer text-xs font-medium text-[#1D4ED8] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {cursosSelecionados.length ===
                                         OPCOES_CURSOS.length
@@ -269,8 +283,8 @@ export default function DataImport() {
                                                 alternarCurso(curso.id)
                                             }
                                             className={`flex cursor-pointer items-center gap-2.5 rounded-md border px-3 py-2 text-xs transition-colors ${selecionado
-                                                    ? "border-[#005386] bg-[#005386]/5 font-medium text-[#005386]"
-                                                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                                ? "border-[#1D4ED8] bg-[#1D4ED8]/5 font-medium text-[#1D4ED8]"
+                                                : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                                 } ${statusAuto === "running"
                                                     ? "cursor-not-allowed opacity-60"
                                                     : ""
@@ -283,7 +297,7 @@ export default function DataImport() {
                                                 disabled={
                                                     statusAuto === "running"
                                                 }
-                                                className="h-3.5 w-3.5 accent-[#005386]"
+                                                className="h-3.5 w-3.5 accent-[#1D4ED8]"
                                             />
                                             <span className="truncate">
                                                 {curso.nome} (<strong>{curso.sigla}</strong>)
@@ -313,7 +327,7 @@ export default function DataImport() {
                                     value={anoInicial}
                                     onChange={(e) => setAnoInicial(e.target.value)}
                                     placeholder="Ex: 2016"
-                                    className="mt-1.5 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#005386] focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="mt-1.5 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#1D4ED8] focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                 />
                             </div>
 
@@ -333,7 +347,7 @@ export default function DataImport() {
                                     value={anoFinal}
                                     onChange={(e) => setAnoFinal(e.target.value)}
                                     placeholder="Ex: 2024"
-                                    className="mt-1.5 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#005386] focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="mt-1.5 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#1D4ED8] focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
                                 />
                             </div>
                         </div>
@@ -424,20 +438,15 @@ export default function DataImport() {
                                             ? `Lote ${progressoInfo.lote_atual} de ${progressoInfo.total_lotes} • ${progressoInfo.curso_atual} (${progressoInfo.intervalo_atual})`
                                             : "Extração em andamento..."}
                                     </span>
-                                    <span className="font-semibold text-[#005386]">
+                                    <span className="font-semibold text-[#1D4ED8]">
                                         {progressoInfo.progresso || 0}%
                                     </span>
                                 </div>
 
-                                <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
                                     <div
-                                        className="h-full rounded-full bg-[#005386] transition-all duration-500"
-                                        style={{
-                                            width: `${Math.max(
-                                                progressoInfo.progresso || 0,
-                                                4
-                                            )}%`,
-                                        }}
+                                        className="h-full rounded-full bg-gradient-to-r from-[#1D4ED8] via-[#06B6D4] to-[#10B981] transition-all duration-500"
+                                        style={{ width: `${Math.max(progressoInfo.progresso || 0, 4)}%` }}
                                     />
                                 </div>
 
@@ -450,7 +459,7 @@ export default function DataImport() {
                                     ) : (
                                         <RefreshCw
                                             size={14}
-                                            className="shrink-0 animate-spin text-[#005386]"
+                                            className="shrink-0 animate-spin text-[#06B6D4]"
                                         />
                                     )}
                                     <span>{mensagemAuto}</span>
@@ -494,6 +503,7 @@ export default function DataImport() {
                         ) : (
                             <button
                                 onClick={handleSyncAutomatica}
+                                disabled={!podeSincronizarAuto}
                                 className="
                                     flex
                                     w-full
@@ -502,19 +512,22 @@ export default function DataImport() {
                                     justify-center
                                     gap-2
                                     rounded-md
-                                    bg-[#005386]
+                                    bg-[#1D4ED8]
                                     px-4
                                     py-2.5
                                     text-sm
                                     font-medium
                                     text-white
                                     transition-colors
-                                    hover:bg-[#004a78]
+                                    hover:bg-[#1E40AF]
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
                                 "
                             >
                                 <Database size={16} />
                                 Buscar dados agora
                             </button>
+
                         )}
 
                         {statusAuto === "success" && (
@@ -578,11 +591,12 @@ export default function DataImport() {
                 </section>
 
                 {/* UPLOAD MANUAL */}
-                <section className="rounded-md border border-gray-200 bg-white">
+                {/* UPLOAD MANUAL */}
+                <section className="flex flex-col rounded-md border border-gray-200 bg-white">
                     <div className="p-6">
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                                <h2 className="text-[17px] font-semibold tracking-tight text-[#0B1B3F]">
                                     Upload manual
                                 </h2>
 
@@ -607,7 +621,7 @@ export default function DataImport() {
                                     font-medium
                                     text-gray-500
                                     transition-colors
-                                    hover:text-[#005386]
+                                    hover:text-[#1D4ED8]
                                 "
                             >
                                 <Info size={15} />
@@ -757,7 +771,7 @@ export default function DataImport() {
                         )}
 
                         {/* ÁREA DE UPLOAD */}
-                        <div className="mt-5 rounded-md border border-dashed border-gray-300 px-6 py-7 text-center transition-colors hover:border-gray-400 hover:bg-gray-50">
+                        <div className="mt-5 rounded-md border border-dashed border-gray-300 px-6 py-7 text-center transition-colors hover:border-[#1D4ED8]/40 hover:bg-[#F1F5F9]/50">
                             <UploadCloud
                                 size={28}
                                 className="mx-auto mb-3 text-gray-400"
@@ -771,7 +785,7 @@ export default function DataImport() {
                                 Você pode selecionar mais de um arquivo.
                             </p>
 
-                            <label className="mt-4 inline-flex cursor-pointer items-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50">
+                            <label className="mt-4 inline-flex cursor-pointer items-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-[#0B1B3F] transition-colors hover:border-[#1D4ED8]/30 hover:bg-[#F1F5F9]">
                                 Escolher arquivos
 
                                 <input
@@ -787,58 +801,86 @@ export default function DataImport() {
                         {/* ARQUIVOS SELECIONADOS */}
                         {arquivos.length > 0 && (
                             <div className="mt-4">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <span className="text-xs font-medium text-gray-700">
+                                        Arquivos selecionados ({arquivos.length})
+                                    </span>
+                                    <button
+                                        type="button"
+                                        disabled={statusManual === "loading"}
+                                        onClick={limparArquivos}
+                                        className="cursor-pointer text-xs font-medium text-[#EF4444] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        Remover todos
+                                    </button>
+                                </div>
+
                                 <div className="space-y-1.5">
                                     {arquivos.map((file, idx) => (
                                         <div
                                             key={idx}
-                                            className="flex items-center gap-2 border-b border-gray-100 py-2 text-sm text-gray-600 last:border-0"
+                                            className="flex items-center justify-between gap-2 rounded-md border border-gray-100 bg-[#F1F5F9]/50 px-3 py-2 text-sm text-gray-700"
                                         >
-                                            <FileText
-                                                size={15}
-                                                className="shrink-0 text-gray-400"
-                                            />
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <FileText
+                                                    size={15}
+                                                    className="shrink-0 text-[#1D4ED8]"
+                                                />
+                                                <span className="truncate font-medium">
+                                                    {file.name}
+                                                </span>
+                                            </div>
 
-                                            <span className="truncate">
-                                                {file.name}
-                                            </span>
+                                            <button
+                                                type="button"
+                                                disabled={statusManual === "loading"}
+                                                onClick={() => removerArquivo(idx)}
+                                                title={`Remover ${file.name}`}
+                                                className="shrink-0 cursor-pointer rounded p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-[#EF4444] disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                <XCircle size={16} />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
-
-                                <button
-                                    onClick={handleUploadManual}
-                                    disabled={statusManual === "loading"}
-                                    className="
-                                        mt-4
-                                        flex
-                                        w-full
-                                        cursor-pointer
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-md
-                                        bg-[#005386]
-                                        px-4
-                                        py-2.5
-                                        text-sm
-                                        font-medium
-                                        text-white
-                                        transition-colors
-                                        hover:bg-[#004a78]
-                                        disabled:cursor-not-allowed
-                                        disabled:opacity-50
-                                    "
-                                >
-                                    {statusManual === "loading"
-                                        ? "Processando arquivos..."
-                                        : "Sincronizar arquivos"}
-                                </button>
                             </div>
                         )}
+                    </div>
+
+                    {/* RODAPÉ ALINHADO COM O CARD DA ESQUERDA */}
+                    <div className="mt-auto border-t border-gray-100 px-6 py-4">
+                        <button
+                            onClick={handleUploadManual}
+                            disabled={arquivos.length === 0 || statusManual === "loading"}
+                            className="
+                                flex
+                                w-full
+                                cursor-pointer
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-md
+                                bg-[#1D4ED8]
+                                px-4
+                                py-2.5
+                                text-sm
+                                font-medium
+                                text-white
+                                transition-colors
+                                hover:bg-[#1E40AF]
+                                disabled:cursor-not-allowed
+                                disabled:opacity-50
+                            "
+                        >
+                            <UploadCloud size={16} />
+                            {statusManual === "loading"
+                                ? "Processando arquivos..."
+                                : "Sincronizar arquivos"}
+                        </button>
 
                         {/* RESULTADO */}
                         {statusManual === "success" && (
-                            <div className="mt-4 flex items-start gap-2 border-t border-gray-100 pt-4 text-sm text-green-700">
+                            <div className="mt-4 flex items-start gap-2 border-t border-gray-100 pt-4 text-sm text-[#10B981]">
                                 <CheckCircle
                                     size={17}
                                     className="mt-0.5 shrink-0"
@@ -849,7 +891,7 @@ export default function DataImport() {
                         )}
 
                         {statusManual === "error" && (
-                            <div className="mt-4 border-t border-gray-100 pt-4 text-sm text-red-600">
+                            <div className="mt-4 border-t border-gray-100 pt-4 text-sm text-[#EF4444]">
                                 {mensagemManual}
                             </div>
                         )}

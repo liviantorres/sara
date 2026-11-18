@@ -5,14 +5,14 @@ export default function KPICard({
     value,
     subtitle,
     icon,
-    highlightColorClass = "text-[#005386]",
+    highlightColorClass = "text-[#1D4ED8]",
 }) {
     return (
         <div className="relative min-w-[190px] flex-1 overflow-hidden rounded-lg border border-gray-200 bg-white p-5">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     {icon && (
-                        <span className="text-gray-400">
+                        <span className="h-8 w-8 rounded-lg bg-[#F1F5F9] text-[#1D4ED8] flex items-center justify-center">
                             {icon}
                         </span>
                     )}
@@ -25,7 +25,7 @@ export default function KPICard({
 
             <div className="mt-4 flex items-baseline gap-2">
                 <p
-                    className="text-[30px] font-semibold leading-none tracking-tight text-gray-900"
+                    className="text-[30px] font-semibold leading-none tracking-tight text-[#0B1B3F]"
                     title={String(value)}
                 >
                     {value}

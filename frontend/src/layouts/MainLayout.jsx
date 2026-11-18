@@ -11,18 +11,19 @@ export default function MainLayout() {
 
   const pageTitles = {
     "/inicial": "Página Inicial",
-    "/alunos": "Alunos",
+    "/alunos": "Estudantes",
     "/estudantes": "Estudantes",
-    "/disciplinas": "Disciplinas",
+    "/disciplinas": "Disciplinas Gargalo",
     "/importacao": "Importação de Dados",
+    "/usuarios": "Gestão de Usuários",
   };
 
-  const currentTitle = pageTitles[location.pathname] || "SARA - Sistema";
+  const currentTitle = location.pathname.startsWith("/alunos/")
+    ? "Dossiê do Estudante"
+    : pageTitles[location.pathname] || "SARA - Sistema";
 
   return (
-
-    <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
-
+    <div className="flex flex-col h-screen overflow-hidden bg-[#F1F5F9]">
       <Header title={currentTitle} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -33,9 +34,7 @@ export default function MainLayout() {
             <Outlet />
           </ErrorBoundary>
         </main>
-
       </div>
-
     </div>
   );
 }

@@ -24,7 +24,7 @@ export default function StudentFilters({
         "mb-1.5 block text-xs font-semibold text-gray-500";
 
     const inputClass =
-        "w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-[#005386] focus:ring-1 focus:ring-[#005386]";
+        "w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]";
 
     return (
         <section className="mb-6 rounded-md border border-gray-200 bg-white">
@@ -32,16 +32,16 @@ export default function StudentFilters({
                 <div className="flex items-center gap-2">
                     <SlidersHorizontal
                         size={17}
-                        className="text-[#005386]"
+                        className="text-[#1D4ED8]"
                     />
 
                     <div>
-                        <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                        <h2 className="text-[17px] font-semibold tracking-tight text-[#0B1B3F]">
                             Filtros
                         </h2>
 
                         <p className="mt-0.5 text-sm text-gray-500">
-                            Consulte os alunos por matrícula, curso ou situação.
+                            Consulte os alunos por matrícula, curso ou situação acadêmica.
                         </p>
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export default function StudentFilters({
                             <button
                                 type="button"
                                 onClick={onSearch}
-                                className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-gray-400 transition-colors hover:text-[#005386]"
+                                className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-gray-400 transition-colors hover:text-[#1D4ED8]"
                                 aria-label="Pesquisar"
                             >
                                 <Search size={17} />
@@ -84,7 +84,7 @@ export default function StudentFilters({
                     </div>
 
                     {/* SITUAÇÃO */}
-                    <div className="w-44">
+                    <div className="w-48">
                         <label className={labelClass}>
                             Situação
                         </label>
@@ -100,8 +100,10 @@ export default function StudentFilters({
                             className={`${inputClass} cursor-pointer`}
                         >
                             <option value="">Todas</option>
-                            <option value="false">Cursando</option>
-                            <option value="true">Formado</option>
+                            <option value="regular">Fluxo regular</option>
+                            <option value="retido">Retido</option>
+                            <option value="cursando">Cursando (Todos)</option>
+                            <option value="formado">Formado</option>
                         </select>
                     </div>
 
@@ -175,7 +177,7 @@ export default function StudentFilters({
             </div>
 
             {temFiltroAtivo && (
-                <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
+                <div className="flex items-center justify-between border-t border-gray-100 bg-[#F1F5F9]/50 px-6 py-3">
                     <span className="text-xs text-gray-500">
                         Filtros aplicados
                     </span>
@@ -183,7 +185,7 @@ export default function StudentFilters({
                     <button
                         type="button"
                         onClick={onClear}
-                        className="cursor-pointer text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+                        className="cursor-pointer text-sm font-medium text-gray-500 transition-colors hover:text-[#1D4ED8]"
                     >
                         Limpar filtros
                     </button>

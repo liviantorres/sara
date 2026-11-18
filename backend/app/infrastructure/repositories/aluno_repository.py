@@ -10,8 +10,12 @@ class AlunoRepository:
         self.db = db
 
     def listar_todos(self, pular: int=0, limite: int=100, curso_id: int=None, matricula: int= None,
-                      formado: bool=None, ira_max: float=None, semestre: int=None):
+                      formado: bool=None, ira_max: float=None, semestre: int=None, situacao: str=None):
         busca = self.db.query(AlunoModel)
+        tempo_ideal = case(
+            (AlunoModel.curso_id.in_([2, 4, 5]), 10),
+            else_=8
+        )
 
         if curso_id is not None:
             busca = busca.filter(AlunoModel.curso_id == curso_id)
@@ -23,28 +27,40 @@ class AlunoRepository:
             busca = busca.filter(AlunoModel.formado == formado)
 
         if ira_max is not None:
-            busca = busca.filter(AlunoModel.ira <=ira_max)
+            busca = busca.filter(AlunoModel.ira <= ira_max)
 
         if semestre is not None:
             busca = busca.filter(AlunoModel.semestre_atual == semestre)
 
+        if situacao == "retido":
+            busca = busca.filter(AlunoModel.formado == False, AlunoModel.semestre_atual > tempo_ideal)
+        elif situacao == "regular":
+            busca = busca.filter(AlunoModel.formado == False, AlunoModel.semestre_atual <= tempo_ideal)
+
         return busca.offset(pular).limit(limite).all()
 
-    def obter_estatisticas(self, curso_id: int=None, matricula: int=None, formado: bool=None, ira_max: float=None, semestre: int=None):
-        
+    def obter_estatisticas(self, curso_id: int=None, matricula: int=None, formado: bool=None, ira_max: float=None, semestre: int=None, situacao: str=None):
         busca = self.db.query(func.count(AlunoModel.matricula).label('total'), 
                               func.avg(AlunoModel.ira).label('ira_medio'))
+        tempo_ideal = case(
+            (AlunoModel.curso_id.in_([2, 4, 5]), 10),
+            else_=8
+        )
 
         if curso_id is not None:
-                    busca = busca.filter(AlunoModel.curso_id == curso_id)   
+            busca = busca.filter(AlunoModel.curso_id == curso_id)   
         if matricula is not None:
             busca = busca.filter(cast(AlunoModel.matricula, String).ilike(f"%{matricula}%"))
         if formado is not None:
             busca = busca.filter(AlunoModel.formado == formado)
         if ira_max is not None:
-            busca = busca.filter(AlunoModel.ira <=ira_max)
+            busca = busca.filter(AlunoModel.ira <= ira_max)
         if semestre is not None:
             busca = busca.filter(AlunoModel.semestre_atual == semestre)
+        if situacao == "retido":
+            busca = busca.filter(AlunoModel.formado == False, AlunoModel.semestre_atual > tempo_ideal)
+        elif situacao == "regular":
+            busca = busca.filter(AlunoModel.formado == False, AlunoModel.semestre_atual <= tempo_ideal)
 
         resultado = busca.first()
 
@@ -52,7 +68,7 @@ class AlunoRepository:
              "total": resultado.total or 0,
              "ira_medio": round(resultado.ira_medio or 0.0, 2)
         }
-
+    
     def obter_dados_dashboard(self, curso_id: int = None):
 
         tempo_ideal = case(

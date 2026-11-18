@@ -23,7 +23,7 @@ import DataTable from "../components/DataTable";
 import ChartContainer from "../components/ChartContainer";
 import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
 
-const CORES_PIZZA = ["#C2413B", "#005386"];
+const CORES_PIZZA = ["#EF4444", "#1D4ED8"];
 
 export default function Disciplines() {
     const [materias, setMaterias] = useState([]);
@@ -77,10 +77,10 @@ export default function Disciplines() {
         if (active && payload && payload.length) {
             return (
                 <div className="rounded-md border border-gray-200 bg-white px-3 py-2 shadow-sm">
-                    <p className="mb-1 text-xs font-semibold text-gray-900">
+                    <p className="mb-1 text-xs font-semibold text-[#0B1B3F]">
                         {payload[0].payload.nomeCompleto} ({payload[0].payload.codigo})
                     </p>
-                    <p className="text-xs font-semibold text-[#C2413B]">
+                    <p className="text-xs font-semibold text-[#EF4444]">
                         Reprovações: {payload[0].value}
                     </p>
                 </div>
@@ -96,11 +96,10 @@ export default function Disciplines() {
             cellClassName: "text-center",
             render: (row, index) => (
                 <span
-                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
-                        index < 3
-                            ? "border border-red-200 bg-red-50 text-[#C2413B]"
-                            : "bg-gray-100 text-gray-700"
-                    }`}
+                    className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${index < 3
+                        ? "border border-red-200 bg-red-50 text-[#EF4444]"
+                        : "bg-gray-100 text-gray-700"
+                        }`}
                 >
                     {index + 1}º
                 </span>
@@ -108,18 +107,18 @@ export default function Disciplines() {
         },
         {
             header: "Disciplina",
-            cellClassName: "font-medium text-gray-900",
+            cellClassName: "font-medium text-[#0B1B3F]",
             accessor: "nome",
         },
         {
             header: "Código",
-            cellClassName: "text-xs text-[#005386] font-mono font-semibold",
+            cellClassName: "text-xs text-[#1D4ED8] font-mono font-semibold",
             accessor: "codigo",
         },
         {
             header: "Reprovações Acumuladas",
             headerClassName: "text-center",
-            cellClassName: "text-center font-semibold text-gray-900",
+            cellClassName: "text-center font-semibold text-[#0B1B3F]",
             accessor: "reprovacoes",
         },
         {
@@ -129,7 +128,7 @@ export default function Disciplines() {
             render: (row, index) => {
                 if (index < 5)
                     return (
-                        <span className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#C2413B]">
+                        <span className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#EF4444]">
                             Crítico
                         </span>
                     );
@@ -140,7 +139,7 @@ export default function Disciplines() {
                         </span>
                     );
                 return (
-                    <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-[#005386]">
+                    <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-[#1D4ED8]">
                         Moderado
                     </span>
                 );
@@ -152,7 +151,7 @@ export default function Disciplines() {
         <div className="font-figtree">
             <PageHeader
                 tag="Mapeamento Acadêmico"
-                title="Disciplinas Gargalo."
+                title="Disciplinas Gargalo"
                 description="Identifique os componentes curriculares com maior incidência histórica de reprovações e retenção."
             />
 
@@ -187,14 +186,14 @@ export default function Disciplines() {
                             value={materias[0]?.nome}
                             subtitle={`${materias[0]?.reprovacoes} reprovações`}
                             icon={<AlertTriangle size={17} />}
-                            highlightColorClass="text-[#C2413B]"
+                            highlightColorClass="text-[#EF4444]"
                         />
                         <KPICard
                             title="Impacto Acumulado"
                             value={totalReprovacoes}
                             subtitle="Total de reprovações"
                             icon={<TrendingDown size={17} />}
-                            highlightColorClass="text-[#C2413B]"
+                            highlightColorClass="text-[#EF4444]"
                         />
                     </>
                 ) : null}
@@ -213,7 +212,7 @@ export default function Disciplines() {
                         >
                             <BarChart
                                 data={dadosGraficoBarras}
-                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
                             >
                                 <CartesianGrid
                                     strokeDasharray="3 3"
@@ -222,26 +221,30 @@ export default function Disciplines() {
                                 />
                                 <XAxis
                                     dataKey="codigo"
-                                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                                    stroke="#9CA3AF"
+                                    tick={{ fontSize: 12 }}
                                     tickMargin={10}
-                                    axisLine={false}
-                                    tickLine={false}
                                 />
                                 <YAxis
-                                    tick={{ fontSize: 11, fill: "#6B7280" }}
-                                    axisLine={false}
-                                    tickLine={false}
+                                    stroke="#9CA3AF"
+                                    tick={{ fontSize: 11 }}
                                 />
                                 <Tooltip
                                     content={<CustomBarTooltip />}
-                                    cursor={{ fill: "#FEF2F2" }}
+                                    cursor={{ fill: "#F9FAFB" }}
+                                />
+                                <Legend
+                                    wrapperStyle={{ paddingTop: "10px" }}
+                                    iconType="circle"
                                 />
                                 <Bar
+                                    name="Reprovações"
                                     dataKey="reprovacoes"
-                                    fill="#C2413B"
+                                    fill="#EF4444"
                                     radius={[4, 4, 0, 0]}
-                                    maxBarSize={42}
+                                    barSize={26}
                                 />
+
                             </BarChart>
                         </ChartContainer>
                     ) : null}
@@ -300,7 +303,7 @@ export default function Disciplines() {
             <section className="mb-8">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <h2 className="text-[17px] font-semibold tracking-tight text-gray-900">
+                        <h2 className="text-[17px] font-semibold tracking-tight text-[#0B1B3F]">
                             Ranking Completo de Disciplinas
                         </h2>
                         <p className="mt-1 text-sm text-gray-500">

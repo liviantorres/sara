@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from sqlalchemy import text
 from app.infrastructure.security.auth_deps import get_current_user
 from app.infrastructure.security.security_service import hash_password
 from app.infrastructure.db.session import engine, Base, SessionLocal
@@ -28,7 +29,10 @@ app.add_middleware(
 def _garantir_usuarios_iniciais():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
+
     try:
+        db.execute(text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS solicitou_recuperacao BOOLEAN NOT NULL DEFAULT FALSE"))
+        db.commit()
         usuarios_padrao = [
             {
                 "nome": settings.ADMIN_NOME,

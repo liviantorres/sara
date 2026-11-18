@@ -10,7 +10,7 @@ import { useCursos } from "../hooks/useCursos";
 import ChartContainer from "../components/ChartContainer";
 import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
 import KPICard from "../components/KPICard";
-import { Users, AlertTriangle, TrendingDown, GraduationCap  } from "lucide-react";
+import { Users, AlertTriangle, TrendingDown, GraduationCap } from "lucide-react";
 import RetentionMap from "../components/RetentionMap";
 
 export default function Dashboard() {
@@ -77,14 +77,14 @@ export default function Dashboard() {
       value: dados.total_retidos,
       icon: <AlertTriangle size={18} />,
       subtitle: "Fora do tempo regular",
-      highlightColorClass: "text-[#C2413B]",
+      highlightColorClass: "text-[#EF4444]",
     },
     {
       title: "Taxa de retenção",
       value: `${taxaRetencao}%`,
       icon: <TrendingDown size={18} />,
       subtitle: "Entre os não formados",
-      highlightColorClass: "text-[#C2413B]",
+      highlightColorClass: "text-[#EF4444]",
     },
   ];
 
@@ -158,12 +158,16 @@ export default function Dashboard() {
                   padding: "8px 10px",
                   fontSize: "12px",
                 }}
-                cursor={{ fill: "#FEF2F2" }}
+                cursor={{ fill: "#F9FAFB" }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: "10px" }}
+                iconType="circle"
               />
               <Bar
                 name="Alunos Retidos"
                 dataKey="retidos"
-                fill="#C2413B"
+                fill="#EF4444"
                 radius={[0, 4, 4, 0]}
                 barSize={24}
               />
@@ -202,12 +206,16 @@ export default function Dashboard() {
                   padding: "8px 10px",
                   fontSize: "12px",
                 }}
-                cursor={{ fill: "#FEF2F2" }}
+                cursor={{ fill: "#F9FAFB" }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: "10px" }}
+                iconType="circle"
               />
               <Bar
                 name="Total de Reprovações"
                 dataKey="reprovacoes"
-                fill="#C2413B"
+                fill="#EF4444"
                 radius={[0, 4, 4, 0]}
                 barSize={24}
               />
@@ -256,17 +264,19 @@ export default function Dashboard() {
                 name="Ingressantes"
                 type="monotone"
                 dataKey="total"
-                stroke="#005386"
+                stroke="#1D4ED8"
                 strokeWidth={2}
-                dot={false}
+                dot={{ r: 3 }}
+                activeDot={{ r: 5 }}
               />
               <Line
                 name="Retidos"
                 type="monotone"
                 dataKey="retidos"
-                stroke="#C2413B"
+                stroke="#EF4444"
                 strokeWidth={2}
-                dot={false}
+                dot={{ r: 3 }}
+                activeDot={{ r: 5 }}
               />
             </LineChart>
           </ChartContainer>
@@ -306,14 +316,18 @@ export default function Dashboard() {
                   padding: "8px 10px",
                   fontSize: "12px",
                 }}
-                cursor={{ fill: "#FEF2F2" }}
+                cursor={{ fill: "#F9FAFB" }}
+              />
+              <Legend
+                wrapperStyle={{ paddingTop: "10px" }}
+                iconType="circle"
               />
               <Bar
                 name="Alunos Retidos"
                 dataKey="retidos"
-                fill="#C2413B"
+                fill="#EF4444"
                 radius={[4, 4, 0, 0]}
-                barSize={28}
+                barSize={26}
               />
             </BarChart>
           </ChartContainer>
@@ -360,14 +374,14 @@ export default function Dashboard() {
               <Bar
                 name="Em Fluxo Regular"
                 dataKey="regulares"
-                fill="#005386"
+                fill="#1D4ED8"
                 radius={[4, 4, 0, 0]}
                 barSize={26}
               />
               <Bar
                 name="Retidos"
                 dataKey="retidos"
-                fill="#C2413B"
+                fill="#EF4444"
                 radius={[4, 4, 0, 0]}
                 barSize={26}
               />

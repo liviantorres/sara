@@ -7,7 +7,7 @@ export default function Button({ children, className = "", type = "button", ...p
       {...props}
       className={`
         w-full 
-        bg-[#00427A] 
+        bg-[#0B1B3F] 
         hover:bg-[#002f57] 
         text-white 
         py-3 

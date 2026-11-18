@@ -56,7 +56,13 @@ export default function Students() {
         }
 
         if (filtros.situacao !== "") {
-            params.set("formado", filtros.situacao);
+            if (filtros.situacao === "formado" || filtros.situacao === "true") {
+                params.set("formado", "true");
+            } else if (filtros.situacao === "cursando" || filtros.situacao === "false") {
+                params.set("formado", "false");
+            } else {
+                params.set("situacao", filtros.situacao);
+            }
         }
 
         if (filtros.ira !== "") {
@@ -193,7 +199,20 @@ export default function Students() {
             header: "Matrícula",
             accessor: "matricula",
             cellClassName:
-                "font-medium text-[#005386]",
+                "font-medium text-[#1D4ED8]",
+        },
+                {
+            header: "Curso",
+            render: (aluno) => {
+                const cursoObj = cursos.find(
+                    (c) => String(c.id) === String(aluno.curso_id)
+                );
+                return (
+                    <span className="text-gray-700 font-medium">
+                        {cursoObj ? cursoObj.nome : "—"}
+                    </span>
+                );
+            },
         },
         {
             header: "IRA",
@@ -202,10 +221,7 @@ export default function Students() {
 
                 return (
                     <span
-                        className={`font-medium ${ira < 7
-                            ? "text-[#C2413B]"
-                            : "text-[#2F7D5A]"
-                            }`}
+                        className={`text-[#0B1B3F] font-semibold`}
                     >
                         {Number.isFinite(ira)
                             ? ira.toFixed(2)
@@ -243,7 +259,7 @@ export default function Students() {
 
                 if (aluno.formado) {
                     return (
-                        <span className="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-[#2F7D5A]">
+                        <span className="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-[#10B981]">
                             Formado
                         </span>
                     );
@@ -251,14 +267,14 @@ export default function Students() {
 
                 if (isRetido) {
                     return (
-                        <span className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#C2413B]">
+                        <span className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-[#EF4444]">
                             Retido
                         </span>
                     );
                 }
 
                 return (
-                    <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-[#005386]">
+                    <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-[#1D4ED8]">
                         Fluxo regular
                     </span>
                 );
@@ -276,7 +292,7 @@ export default function Students() {
                             `/alunos/${aluno.matricula}`
                         )
                     }
-                    className="inline-flex cursor-pointer items-center justify-center rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#005386]"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-[#1D4ED8]"
                     title="Visualizar perfil acadêmico"
                     aria-label={`Visualizar aluno ${aluno.matricula}`}
                 >
@@ -352,12 +368,6 @@ export default function Students() {
                         </p>
                     </div>
 
-                    <span className="text-xs font-medium text-gray-500">
-                        {totalAlunos}{" "}
-                        {totalAlunos === 1
-                            ? "estudante encontrado"
-                            : "estudantes encontrados"}
-                    </span>
                 </div>
 
                 <DataTable
@@ -367,76 +377,71 @@ export default function Students() {
                     emptyMessage="Nenhum estudante encontrado com os filtros selecionados."
                 />
 
-                {/* Paginação */}
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500">
+                                Exibir
+                            </span>
 
-                    {/* Paginação */}
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500">
-                                    Exibir
-                                </span>
-
-                                <select
-                                    value={itensPorPagina}
-                                    onChange={(e) => {
-                                        setItensPorPagina(Number(e.target.value));
-                                        setPagina(0);
-                                    }}
-                                    className="cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#005386]"
-                                >
-                                    <option value={10}>10</option>
-                                    <option value={25}>25</option>
-                                    <option value={50}>50</option>
-                                </select>
-
-                                <span className="text-sm text-gray-500">
-                                    por página
-                                </span>
-                            </div>
+                            <select
+                                value={itensPorPagina}
+                                onChange={(e) => {
+                                    setItensPorPagina(Number(e.target.value));
+                                    setPagina(0);
+                                }}
+                                className="cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#1D4ED8]"
+                            >
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                            </select>
 
                             <span className="text-sm text-gray-500">
-                                {totalAlunos === 0
-                                    ? "Nenhum registro"
-                                    : `${pagina * itensPorPagina + 1}–${Math.min(
-                                        (pagina + 1) * itensPorPagina,
-                                        totalAlunos
-                                    )} de ${totalAlunos} estudantes`}
+                                por página
                             </span>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-600">
-                                Página {pagina + 1} de {totalPaginas}
-                            </span>
+                        <span className="text-sm text-gray-500">
+                            {totalAlunos === 0
+                                ? "Nenhum registro"
+                                : `${pagina * itensPorPagina + 1}–${Math.min(
+                                    (pagina + 1) * itensPorPagina,
+                                    totalAlunos
+                                )} de ${totalAlunos} estudantes`}
+                        </span>
+                    </div>
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setPagina((anterior) =>
-                                        Math.max(0, anterior - 1)
-                                    )
-                                }
-                                disabled={!podeVoltar}
-                                className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                                <ChevronLeft size={16} />
-                                Anterior
-                            </button>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-600">
+                            Página {pagina + 1} de {totalPaginas}
+                        </span>
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setPagina((anterior) => anterior + 1)
-                                }
-                                disabled={!podeAvancar}
-                                className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-[#005386] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#004a78] disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                                Próxima
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setPagina((anterior) =>
+                                    Math.max(0, anterior - 1)
+                                )
+                            }
+                            disabled={!podeVoltar}
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <ChevronLeft size={16} />
+                            Anterior
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setPagina((anterior) => anterior + 1)
+                            }
+                            disabled={!podeAvancar}
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-[#1D4ED8] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1E40AF] disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Próxima
+                            <ChevronRight size={16} />
+                        </button>
                     </div>
                 </div>
             </section>
