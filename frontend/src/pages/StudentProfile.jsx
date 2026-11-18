@@ -34,12 +34,12 @@ import { SkeletonCard, SkeletonChart } from "../components/Skeleton";
 import { useCursos } from "../hooks/useCursos";
 
 const CORES = {
-    azul: "#005386",
-    vermelho: "#C2413B",
-    verde: "#2F7D5A",
-    cinza: "#9CA3AF",
-    texto: "#4B5563",
-    borda: "#E5E7EB",
+    azul: "#1D4ED8",
+    vermelho: "#EF4444",
+    verde: "#10B981",
+    
+    texto: "#0B1B3F",
+    borda: "#E2E8F0",
 };
 
 const tooltipStyle = {
@@ -138,7 +138,7 @@ export default function StudentProfile() {
                 <button
                     type="button"
                     onClick={() => navigate("/alunos")}
-                    className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+                    className="mb-6 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#1D4ED8]"
                 >
                     <ArrowLeft size={16} />
                     Voltar para alunos
@@ -162,7 +162,7 @@ export default function StudentProfile() {
                     <button
                         type="button"
                         onClick={() => navigate("/alunos")}
-                        className="mt-5 cursor-pointer rounded-md bg-[#005386] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#004a78]"
+                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#1D4ED8] text-white rounded-md text-sm font-medium hover:bg-[#1E40AF] transition-colors cursor-pointer"
                     >
                         Voltar para a lista
                     </button>
@@ -206,26 +206,31 @@ export default function StudentProfile() {
     const totalTrancamentos =
         Number(aluno.qtd_trancamentos) || 0;
 
-    const aprovadas = historico.filter(
+        const aprovadas = historico.filter(
         (item) => item.status_conclusao
     ).length;
 
-    const naoConcluidas = historico.filter(
-        (item) => !item.status_conclusao
+    const comReprovacao = historico.filter(
+        (item) => !item.status_conclusao && Number(item.qtd_reprovado) > 0
+    ).length;
+
+    const pendentes = historico.filter(
+        (item) => !item.status_conclusao && Number(item.qtd_reprovado) === 0
     ).length;
 
     const dadosPizza = [
         {
             name: "Aprovadas",
             value: aprovadas,
-            color: CORES.azul,
+            color: CORES.verde,
         },
         {
-            name: "Não concluídas",
-            value: naoConcluidas,
+            name: "Com reprovação",
+            value: comReprovacao,
             color: CORES.vermelho,
         },
-    ];
+        
+    ].filter((item) => item.value > 0);
 
     const totalDisciplinas = historico.length;
 
@@ -240,14 +245,14 @@ export default function StudentProfile() {
         Number(aluno.semestre_atual) > limiteSemestres;
 
     let statusAcademico = "Fluxo regular";
-    let corStatus = "text-[#005386]";
+    let corStatus = "text-[#1D4ED8]";
 
     if (aluno.formado) {
         statusAcademico = "Formado";
-        corStatus = "text-[#2F7D5A]";
+        corStatus = "text-[#10B981]";
     } else if (isRetido) {
         statusAcademico = "Retido";
-        corStatus = "text-[#C2413B]";
+        corStatus = "text-[#EF4444]";
     }
 
     const materiasCriticas = [...historico]
@@ -266,7 +271,7 @@ export default function StudentProfile() {
             value: totalReprovacoes,
             subtitle: "Total registrado",
             icon: <AlertCircle size={17} />,
-            highlightColorClass: "text-[#C2413B]",
+            highlightColorClass: "text-[#EF4444]",
         },
         {
             title: "Trancamentos",
@@ -293,8 +298,8 @@ export default function StudentProfile() {
             icon: <BookOpen size={17} />,
             highlightColorClass:
                 horasFaltantes > 0
-                    ? "text-[#005386]"
-                    : "text-[#2F7D5A]",
+                    ? "text-[#1D4ED8]"
+                    : "text-[#10B981]",
         },
         {
             title: "Variação das notas",
@@ -304,56 +309,58 @@ export default function StudentProfile() {
         },
     ];
 
-    const colunasHistorico = [
+        const colunasHistorico = [
         {
             header: "Disciplina",
             render: (row) => (
                 <div className="py-0.5">
-                    <span className="font-semibold text-gray-900 block leading-snug">
+                    <span className="font-semibold text-[#0B1B3F] block leading-snug">
                         {row.disciplina_nome || "Nome não cadastrado"}
                     </span>
-                    <span className="text-xs text-gray-400 font-mono tracking-wide">
+                    <span className="text-xs text-[#1D4ED8] font-mono font-semibold tracking-wide">
                         {row.disciplina_codigo}
                     </span>
                 </div>
-            )
+            ),
         },
         {
             header: "Situação",
-            render: (row) => (
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${row.status_conclusao
-                    ? "bg-green-100 text-green-700 border border-green-200"
-                    : "bg-red-50 text-red-600 border border-red-200"
-                    }`}>
-                    {row.status_conclusao ? "Aprovado" : "Pendente / Reprovado"}
-                </span>
-            )
-        },
-        {
-            header: "Tentativas Falhas",
-            headerClassName: "text-center",
-            cellClassName: "text-center",
-            render: (row) => (
-                <span className={`inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-xs font-bold ${row.qtd_reprovado > 0 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-500"
-                    }`}>
-                    {row.qtd_reprovado}
-                </span>
-            )
+            render: (row) => {
+                if (row.status_conclusao) {
+                    return (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/30">
+                            Aprovado
+                        </span>
+                    );
+                }
+                if (Number(row.qtd_reprovado) > 0) {
+                    return (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-[#EF4444] border border-red-200">
+                            Reprovado
+                        </span>
+                    );
+                }
+                return (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-[#1D4ED8] border border-blue-200">
+                        Pendente
+                    </span>
+                );
+            },
         },
         {
             header: "Reprovações",
             headerClassName: "text-center",
             cellClassName: "text-center",
             render: (row) => {
-                const quantidade =
-                    Number(row.qtd_reprovado) || 0;
+                const quantidade = Number(row.qtd_reprovado) || 0;
 
                 return (
                     <span
-                        className={`inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-xs font-medium ${quantidade > 0
-                            ? "bg-red-50 text-[#C2413B]"
-                            : "bg-gray-50 text-gray-500"
-                            }`}
+                        className={`inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-xs font-semibold ${
+                            quantidade > 0
+                                ? "bg-red-50 text-[#EF4444]"
+                                : "bg-gray-50 text-gray-500"
+                        }`}
                     >
                         {quantidade}
                     </span>
@@ -368,7 +375,7 @@ export default function StudentProfile() {
             <button
                 type="button"
                 onClick={() => navigate("/alunos")}
-                className="mb-5 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#005386]"
+                className="mb-5 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#1D4ED8]"
             >
                 <ArrowLeft size={16} />
                 Voltar para alunos
@@ -380,7 +387,7 @@ export default function StudentProfile() {
                 title={`Matrícula: ${aluno.matricula}`}
                 description={
                     <span className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="inline-flex items-center gap-1 font-semibold text-[#005386] bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 text-xs">
+                        <span className="inline-flex items-center gap-1 font-semibold text-[#1D4ED8] bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 text-xs">
                             <GraduationCap size={14} />
                             {cursoDoAluno ? `${cursoDoAluno.nome} (${cursoDoAluno.sigla})` : "Curso não informado"}
                         </span>
@@ -404,7 +411,6 @@ export default function StudentProfile() {
                     {
                         label: "IRA",
                         value: ira.toFixed(2),
-                        color: ira < 7 ? "text-[#C2413B]" : "text-[#2F7D5A]",
                     },
                     {
                         label: "Situação",
@@ -419,11 +425,11 @@ export default function StudentProfile() {
                 <div className="mb-6 flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4">
                     <AlertTriangle
                         size={19}
-                        className="mt-0.5 shrink-0 text-[#C2413B]"
+                        className="mt-0.5 shrink-0 text-[#EF4444]"
                     />
 
                     <div>
-                        <h3 className="text-sm font-semibold text-[#C2413B]">
+                        <h3 className="text-sm font-semibold text-[#EF4444]">
                             Aluno em situação de retenção
                         </h3>
 
@@ -475,7 +481,7 @@ export default function StudentProfile() {
                         </p>
                     </div>
 
-                    <span className="text-lg font-semibold text-[#005386]">
+                    <span className="text-lg font-bold text-[#1D4ED8]">
                         {porcentagemConclusao}%
                     </span>
                 </div>
@@ -489,10 +495,8 @@ export default function StudentProfile() {
                     aria-valuemax={100}
                 >
                     <div
-                        className="h-full rounded-full bg-[#005386] transition-[width] duration-300"
-                        style={{
-                            width: `${porcentagemConclusao}%`,
-                        }}
+                        className="h-full rounded-full bg-gradient-to-r from-[#1D4ED8] via-[#06B6D4] to-[#10B981] transition-[width] duration-300"
+                        style={{ width: `${porcentagemConclusao}%` }}
                     />
                 </div>
 
@@ -573,7 +577,7 @@ export default function StudentProfile() {
                             <>
                                 <CheckCircle2
                                     size={30}
-                                    className="text-[#2F7D5A]"
+                                    className="text-[#10B981]"
                                 />
 
                                 <p className="text-sm text-gray-500">
@@ -586,39 +590,36 @@ export default function StudentProfile() {
                     <BarChart
                         data={materiasCriticas}
                         layout="vertical"
-                        margin={{ top: 10, right: 20, left: 10, bottom: 0 }}
+                        margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
                     >
                         <CartesianGrid
                             strokeDasharray="3 3"
                             horizontal={true}
                             vertical={false}
-                            stroke={CORES.borda}
+                            stroke="#E5E7EB"
                         />
 
                         <XAxis
                             type="number"
                             allowDecimals={false}
-                            stroke={CORES.cinza}
-                            tick={{ fontSize: 11 }}
-                            axisLine={false}
-                            tickLine={false}
+                            stroke="#9CA3AF"
+                            tick={{ fontSize: 12 }}
                         />
 
                         <YAxis
                             dataKey="name"
                             type="category"
+                            stroke="#9CA3AF"
                             width={80}
                             tick={{
                                 fontSize: 11,
-                                fill: CORES.texto,
+                                fill: "#4B5563",
                                 fontWeight: 600,
                             }}
-                            axisLine={false}
-                            tickLine={false}
                         />
 
                         <Tooltip
-                            cursor={{ fill: "#FEF2F2" }}
+                            cursor={{ fill: "#F9FAFB" }}
                             contentStyle={tooltipStyle}
                             labelFormatter={(label, payload) =>
                                 payload?.[0]?.payload?.nomeDisciplina
@@ -631,12 +632,17 @@ export default function StudentProfile() {
                             ]}
                         />
 
+                        <Legend
+                            wrapperStyle={{ paddingTop: "10px" }}
+                            iconType="circle"
+                        />
+
                         <Bar
                             name="Reprovações"
                             dataKey="reprovacoes"
                             fill={CORES.vermelho}
                             radius={[0, 4, 4, 0]}
-                            barSize={22}
+                            barSize={24}
                         />
                     </BarChart>
                 </ChartContainer>

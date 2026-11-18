@@ -1,9 +1,14 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class RegistroUsuarioInput(BaseModel):
     nome: str
     email: str
-    senha: str 
+    senha: str
+    papel: Optional[str] = "coordenacao"
+
+class RedefinirSenhaInput(BaseModel):
+    nova_senha: str
 
 class LoginUsuarioInput(BaseModel):
     email: str
@@ -18,3 +23,6 @@ class TokenOutput(BaseModel):
 class RefreshTokenInput(BaseModel):
     refresh_token: str
 
+class SolicitarRecuperacaoInput(BaseModel):
+    email: str
+    nova_senha: str

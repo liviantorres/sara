@@ -10,10 +10,17 @@ const Students = lazy(() => import("../pages/Students"));
 const Disciplines = lazy(() => import("../pages/Disciplines"));
 const DataImport = lazy(() => import("../pages/DataImport"));
 const StudentProfile = lazy(() => import("../pages/StudentProfile"))
-
+const Users = lazy(() => import("../pages/Users"));
 
 const SuspenseWrapper = ({ children }) => (
-  <Suspense fallback={<div>Carregando módulo...</div>}>
+  <Suspense
+    fallback={
+      <div className="flex items-center justify-center py-20 gap-2 text-sm text-gray-500 font-figtree">
+        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#1D4ED8]" />
+        Carregando módulo...
+      </div>
+    }
+  >
     {children}
   </Suspense>
 );
@@ -55,6 +62,7 @@ export const appRoutes = createBrowserRouter([
             element: <DaeRoute />,
             children: [
               { path: "/importacao", element: <SuspenseWrapper><DataImport /></SuspenseWrapper> },
+              { path: "/usuarios", element: <SuspenseWrapper><Users /></SuspenseWrapper> },
             ]
           }
         ],

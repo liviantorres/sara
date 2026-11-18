@@ -13,12 +13,13 @@ router = APIRouter(tags=["Alunos"])
 def listar_alunos(pular: int=0, limite: int=100,curso_id: Optional[int]=None,
                   matricula: Optional[int]=None, formado: Optional[bool]=None, 
                   ira_max: Optional[float]=None, semestre: Optional[int]=None,
+                  situacao: Optional[str]= None,
                    db: Session = Depends(get_db)):
     
     repository = AlunoRepository(db)
     use_case = ListarAlunosUseCases(repository)
 
-    alunos = use_case.executar(pular=pular, limite=limite, curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre)
+    alunos = use_case.executar(pular=pular, limite=limite, curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre, situacao=situacao)
 
     return alunos
 
@@ -29,13 +30,14 @@ def obter_estatisticas_alunos(
     formado: Optional[bool] = None,
     ira_max: Optional[float] = None,
     semestre: Optional[int] = None,
+    situacao: Optional[str] = None,
     db: Session = Depends(get_db)
     ):
     repository = AlunoRepository(db)
     use_case = ListarAlunosUseCases(repository)
     
     return use_case.obter_estatisticas(
-    curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre
+    curso_id=curso_id, matricula=matricula, formado=formado, ira_max=ira_max, semestre=semestre, situacao=situacao
     )
 
 @router.get("/alunos/dashboard")
